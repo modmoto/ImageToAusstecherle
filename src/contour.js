@@ -84,17 +84,40 @@ export function extractContour(
   const half = Math.floor(raw.length / 2);
   const tolerance =
     detailTolerances[detail - 1] ?? detailTolerances[defaultDetail - 1];
-  const points = [
-    ...simplify(raw.slice(0, half + 1), tolerance).slice(0, -1),
-    ...simplify([...raw.slice(half), raw[0]], tolerance).slice(0, -1),
+  const firstHalf = raw.slice(0, half + 1);
+  const secondHalf = [...raw.slice(half), raw[0]];
+  const simplifyRing = (epsilon) => [
+    ...simplify(firstHalf, epsilon).slice(0, -1),
+    ...simplify(secondHalf, epsilon).slice(0, -1),
   ];
-  if (points.length < 3) throw new Error("The detected shape is too small.");
-  if (points.length > 600)
-    throw new Error(
-      "The contour is too complex. Lower Contour detail or use a simpler silhouette.",
-    );
-  if (signedArea(points) < 0) points.reverse();
+
+  let points = simplifyRing(tolerance);
   const warnings = [];
+  const pointLimit = 600;
+  if (points.length > pointLimit) {
+    let lower = tolerance;
+    let upper = tolerance * 2;
+    points = simplifyRing(upper);
+    while (points.length > pointLimit) {
+      lower = upper;
+      upper *= 2;
+      points = simplifyRing(upper);
+    }
+    // Find a tolerance near the limit without discarding more detail than needed.
+    for (let i = 0; i < 10; i++) {
+      const middle = (lower + upper) / 2;
+      const candidate = simplifyRing(middle);
+      if (candidate.length > pointLimit) {
+        lower = middle;
+      } else {
+        upper = middle;
+        points = candidate;
+      }
+    }
+    warnings.push("Contour detail was reduced to keep conversion manageable.");
+  }
+  if (points.length < 3) throw new Error("The detected shape is too small.");
+  if (signedArea(points) < 0) points.reverse();
   if (sorted.length > 1)
     warnings.push("Multiple shapes detected: only the largest is used.");
   if (sorted[0].length > 1)

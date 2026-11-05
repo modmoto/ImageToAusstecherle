@@ -168,3 +168,23 @@ test("contour detail preserves more points at higher settings", () => {
   );
   assert.ok(counts[0] < counts[1] && counts[1] < counts[2], counts.join(", "));
 });
+
+test("dense contours at maximum detail are simplified to the point limit", () => {
+  const width = 508,
+    height = 120;
+  const data = new Uint8Array(width * height * 4);
+  for (let x = 2; x < width - 2; x++) {
+    const inset = x % 2 === 0 ? 5 : 10;
+    for (let y = inset; y < height - inset; y++) {
+      data[(y * width + x) * 4 + 3] = 255;
+    }
+  }
+  const { points, warnings } = extractContour(
+    { data, width, height },
+    128,
+    false,
+    5,
+  );
+  assert.ok(points.length >= 3 && points.length <= 600);
+  assert.ok(warnings.some((message) => message.includes("detail was reduced")));
+});
