@@ -833,3 +833,16 @@ footer {
 footer {
   font-size: 11px;
 }
+
+.contour-detail {
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+.contour-detail input {
+  width: 100%;
+  accent-color: var(--green);
+}
+.contour-detail output {
+  color: var(--green);
+  font-weight: 600;
+}

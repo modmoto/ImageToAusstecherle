@@ -158,3 +158,13 @@ test("width is horizontal, including tall images; X and Y stay proportional", ()
   assert.ok(Math.abs(body.bounds.max[0] - body.bounds.min[0] - 61.2) < 0.01);
   assert.ok(Math.abs(body.bounds.max[1] - body.bounds.min[1] - 211.2) < 0.01);
 });
+
+test("contour detail preserves more points at higher settings", () => {
+  const png = PNG.sync.read(
+    readFileSync(new URL("../examples/herz.png", import.meta.url)),
+  );
+  const counts = [1, 3, 5].map(
+    (detail) => extractContour(png, 128, false, detail).points.length,
+  );
+  assert.ok(counts[0] < counts[1] && counts[1] < counts[2], counts.join(", "));
+});

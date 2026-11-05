@@ -41,10 +41,14 @@ function simplify(points, tolerance) {
       ];
 }
 
+export const defaultDetail = 3;
+const detailTolerances = [2, 1.25, 0.8, 0.5, 0.25];
+
 export function extractContour(
   { data, width, height },
   threshold = 128,
   invert = false,
+  detail = defaultDetail,
 ) {
   // Composite over white: transparent pixels are background, not black ink.
   const values = new Uint8Array(width * height);
@@ -78,14 +82,16 @@ export function extractContour(
   if (!sorted.length) throw new Error("No closed contour found.");
   const raw = sorted[0][0].slice(0, -1).map(([x, y]) => [x, height - y]);
   const half = Math.floor(raw.length / 2);
+  const tolerance =
+    detailTolerances[detail - 1] ?? detailTolerances[defaultDetail - 1];
   const points = [
-    ...simplify(raw.slice(0, half + 1), 0.8).slice(0, -1),
-    ...simplify([...raw.slice(half), raw[0]], 0.8).slice(0, -1),
+    ...simplify(raw.slice(0, half + 1), tolerance).slice(0, -1),
+    ...simplify([...raw.slice(half), raw[0]], tolerance).slice(0, -1),
   ];
   if (points.length < 3) throw new Error("The detected shape is too small.");
   if (points.length > 600)
     throw new Error(
-      "The contour is too complex. Please use a simpler silhouette.",
+      "The contour is too complex. Lower Contour detail or use a simpler silhouette.",
     );
   if (signedArea(points) < 0) points.reverse();
   const warnings = [];

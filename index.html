@@ -114,13 +114,33 @@
             </div>
           </section>
           <details class="settings" id="settings">
-            <summary>Adjust dimensions <span>Optional</span></summary>
+            <summary>Settings <span>Optional</span></summary>
             <div class="settings-content">
               <div class="section-heading">
                 <h2>Your dimensions</h2>
                 <button type="button" id="reset" class="text-button">
                   Reset defaults
                 </button>
+              </div>
+              <div class="contour-detail">
+                <label class="range-label" for="contour-detail"
+                  >Contour detail
+                  <output id="contour-detail-value" for="contour-detail"
+                    >3 / 5</output
+                  ></label
+                >
+                <input
+                  id="contour-detail"
+                  type="range"
+                  min="1"
+                  max="5"
+                  step="1"
+                  value="3"
+                  aria-describedby="contour-detail-help"
+                />
+                <p class="tiny" id="contour-detail-help">
+                  Higher detail keeps more points and takes longer to convert.
+                </p>
               </div>
               <figure class="dimension-guide">
                 <img

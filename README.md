@@ -17,7 +17,7 @@ Open the local URL printed by Vite.
 
 1. Choose or drop a PNG, SVG, JPG or WebP file.
 2. Set the size if needed. The slider below **Convert** defaults to **50 mm horizontal contour width (X)**. Type a precise width or height (Y); the other dimension is calculated from the detected contour while preserving proportions.
-3. Optionally expand **Adjust dimensions** for the wall cross-section diagram and advanced settings.
+3. Optionally expand **Settings** for the wall cross-section diagram, dimensions and **Contour detail**. Higher detail retains more contour points; lower it if conversion is slow or the contour is too complex.
 4. Click **Convert**, inspect the preview and download the STL.
 
 Changes only affect the 3D model after clicking Convert. Files stay on the device. The app starts empty and has no sample buttons.

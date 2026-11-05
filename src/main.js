@@ -1,5 +1,5 @@
 import "./style.css";
-import { extractContour, contourAspect } from "./contour.js";
+import { extractContour, contourAspect, defaultDetail } from "./contour.js";
 import { defaults } from "./geometry.js";
 import { createViewer } from "./viewer.js";
 
@@ -71,8 +71,12 @@ function refreshAspect() {
   if (image) {
     try {
       aspect = contourAspect(
-        extractContour(image, Number($("threshold").value), $("invert").checked)
-          .points,
+        extractContour(
+          image,
+          Number($("threshold").value),
+          $("invert").checked,
+          $("contour-detail").valueAsNumber,
+        ).points,
       );
     } catch {
       /* The worker reports detection errors when Convert is clicked. */
@@ -96,6 +100,7 @@ function generate() {
     parameters,
     threshold: Number($("threshold").value),
     invert: $("invert").checked,
+    detail: $("contour-detail").valueAsNumber,
   });
 }
 worker.onmessage = ({ data }) => {
@@ -291,10 +296,16 @@ $("invert").addEventListener("change", () => {
   refreshAspect();
   settingsChanged();
 });
+function updateDetail() {
+  $("contour-detail-value").textContent = `${$("contour-detail").value} / 5`;
+  refreshAspect();
+  settingsChanged();
+}
+$("contour-detail").addEventListener("input", updateDetail);
 $("reset").addEventListener("click", () => {
   for (const [key, value] of Object.entries(defaults)) $(key).value = value;
-  syncSize();
-  settingsChanged();
+  $("contour-detail").value = defaultDetail;
+  updateDetail();
 });
 $("view-reset").addEventListener("click", () => viewer?.reset());
 const drop = $("drop-zone");

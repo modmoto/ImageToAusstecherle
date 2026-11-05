@@ -8,11 +8,16 @@ const ready = Module({ locateFile: () => wasmUrl }).then((api) => {
   return api;
 });
 self.onmessage = async ({
-  data: { id, image, parameters, threshold, invert },
+  data: { id, image, parameters, threshold, invert, detail },
 }) => {
   try {
     const api = await ready;
-    const { points, warnings } = extractContour(image, threshold, invert);
+    const { points, warnings } = extractContour(
+      image,
+      threshold,
+      invert,
+      detail,
+    );
     const result = createCutter(api, points, parameters);
     self.postMessage({ id, result, warnings }, [
       result.positions.buffer,
