@@ -61,6 +61,44 @@ Preview the exact production build locally:
 npm run preview
 ```
 
+## Docker Compose with the existing HTTPS proxy
+
+This follows the Caddy setup in `modmoto/host-bootstrap` and the external `caddy` network used by `modmoto/ItWorksOnMyMachine_org`. An older checkout also contains an nginx-proxy setup; this configuration targets the newer Caddy setup.
+
+The Dockerfile builds with Node.js and copies only the static build into Nginx. Node.js is not part of the running image. There is no application backend. The website container exposes port 80 only inside Docker, so it does not compete with Caddy's public ports 80/443.
+
+From the repository root on the Docker host:
+
+```sh
+# The existing Caddy stack must already be running on this network.
+docker network inspect caddy
+
+# Build and start the static website.
+docker compose up -d --build
+```
+
+Add the block from `docker/Caddyfile.example` to your **existing** `host-bootstrap/caddy/Caddyfile`, replacing `ausstecherle.example.com` with the real hostname. Set that domain's DNS A/AAAA records to your server and keep ports 80 and 443 reachable by Caddy. Caddy obtains and renews the TLS certificate automatically; no certificate files or HTTPS environment variables are needed in the website container.
+
+From the existing `host-bootstrap/caddy` directory, validate and reload the updated proxy configuration:
+
+```sh
+docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
+docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+The `caddy` external network must be shared by both stacks **on the same Docker host**. Do not replace the existing Caddyfile with the example or start another proxy for this app. If the network is missing, start the existing Caddy setup first; creating a separate network alone does not connect that proxy.
+
+For updates, run `docker compose up -d --build` again from this repository. Nginx revalidates the HTML entry point and caches Vite's content-hashed assets. Its standard MIME mappings serve the geometry engine as `application/wasm`.
+
+To test just the built image locally without Caddy:
+
+```sh
+docker build -t imagetoausstecherle:local .
+docker run --rm -p 127.0.0.1:8080:80 imagetoausstecherle:local
+```
+
+Open `http://127.0.0.1:8080/`. This local-only command serves plain HTTP; production HTTPS belongs to the existing Caddy proxy. The example hostname is a placeholder and has not been deployed or added to DNS.
+
 ## How it works
 
 - Canvas decodes the image, proportionally downsamples it to at most 508 pixels, and adds a transparent border.

@@ -1,0 +1,19 @@
+services:
+  ausstecherle:
+    build: .
+    image: imagetoausstecherle:local
+    container_name: ausstecherle
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  default:
+    external: true
+    name: caddy

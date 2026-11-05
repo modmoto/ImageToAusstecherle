@@ -1,0 +1,6 @@
+# Add this block to the EXISTING host-bootstrap/caddy/Caddyfile.
+# Replace the example hostname with your actual domain.
+ausstecherle.example.com {
+    encode zstd gzip
+    reverse_proxy http://ausstecherle:80
+}
