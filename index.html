@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f7f2" />
+  <meta name="description" content="Aus einem PNG wird deine eigene Ausstechform. Lokal im Browser gestalten und als STL herunterladen." />
+  <title>Ausstecherle — Vom Bild zur Form</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 54 8 30C-6 10 21 0 32 18 43 0 70 10 56 30Z' fill='%232b6557'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <header class="header"><a class="brand" href="./"><span class="brand-icon">a.</span> ausstecherle<span class="beta">PROTOTYP</span></a><span class="privacy"><i></i> Alles bleibt in deinem Browser</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">VOM BILD ZUR FORM</p><h1>Kleine Form. Große Freude.</h1><p>Dein Motiv wird zur Ausstechform. Einfach gestalten, als STL mitnehmen.</p></div><span class="intro-note">Für deine nächste<br />Lieblingsform.</span></div>
+    <div class="workspace">
+      <aside class="controls">
+        <section aria-labelledby="image-title"><div class="section-heading"><span class="step">01</span><h2 id="image-title">Dein Motiv</h2></div>
+          <label class="upload" id="drop-zone"><input id="file" type="file" accept="image/png,image/jpeg,image/webp" /><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5"/></svg><strong>Bild auswählen</strong><span>oder hier hineinziehen · PNG, JPG, WebP</span></label>
+          <p class="tiny">Am besten: eine dunkle Silhouette auf hellem oder transparentem Hintergrund.</p>
+          <div class="example-label">ODER EIN BEISPIEL AUSPROBIEREN</div>
+          <div class="examples" id="examples"></div>
+          <div class="source"><img id="source-image" alt="Gewähltes Motiv" /><div><strong id="source-name">Herz</strong><span id="source-description">PNG-Beispiel · 512 × 512</span></div><span class="source-tag">PNG → 3D</span></div>
+          <details class="image-options"><summary>Bilderkennung anpassen</summary><label class="range-label" for="threshold">Schwellwert <output id="threshold-value">128</output></label><input id="threshold" type="range" min="1" max="254" value="128" /><label class="checkbox"><input id="invert" type="checkbox" /> Helles Motiv / dunkler Hintergrund</label><p class="tiny">Verwendet wird die größte Außenkontur. Innere Bildkonturen werden ignoriert.</p></details>
+        </section>
+        <section aria-labelledby="dimensions-title"><div class="section-heading"><span class="step">02</span><h2 id="dimensions-title">Deine Maße</h2><button type="button" id="reset" class="text-button">Zurücksetzen</button></div>
+          <div id="parameters" class="parameters"></div>
+          <p class="tiny">Konturgröße = längste Seite der Wandmittellinie. Die Base kommt außen dazu. Alle Maße in Millimetern.</p>
+        </section>
+      </aside>
+      <section class="preview-panel" aria-labelledby="preview-title">
+        <div class="preview-heading"><div><p class="eyebrow">DEINE AUSSTECHFORM</p><h2 id="preview-title">Ein Herz für Selbstgemachtes.</h2></div><span class="preview-badge">LIVE-VORSCHAU</span></div>
+        <div class="viewport" id="viewport"><div class="viewer-label">3D / MILLIMETER</div><canvas id="viewer" aria-label="Drehbare dreidimensionale Vorschau der Ausstechform"></canvas><div class="busy" id="busy"><span></span> Deine Form entsteht …</div><button class="view-reset" id="view-reset" title="Ansicht zurücksetzen" aria-label="Ansicht zurücksetzen">↺</button><div class="viewer-hint">Ziehen zum Drehen <span>·</span> Scrollen zum Zoomen</div></div>
+        <div class="preview-bottom"><div class="stats"><div><span>AUSSENMAẞ</span><strong id="bounds">—</strong></div><div><span>GESAMTHÖHE</span><strong id="total-height">—</strong></div><div><span>VOLUMEN</span><strong id="volume">—</strong></div></div>
+          <p id="status" role="status" aria-live="polite">Geometrie wird geladen …</p>
+          <div class="export-row"><div><strong>Bereit für deinen 3D-Drucker.</strong><p>Offene Form · geschlossener Körper · STL in mm</p></div><button id="download" class="primary" disabled>STL herunterladen <span aria-hidden="true">↓</span></button></div>
+        </div>
+      </section>
+    </div>
+    <footer><span>Mit ein bisschen Fantasie wird aus einem Bild etwas zum Anfassen.</span><span>Kein Account. Kein Upload. Einfach deine Form.</span></footer>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
