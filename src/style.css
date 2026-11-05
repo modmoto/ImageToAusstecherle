@@ -43,7 +43,8 @@ input:focus-visible {
   outline-offset: 4px;
 }
 .header {
-  height: 88px;
+  min-height: 88px;
+  gap: 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -98,12 +99,6 @@ main {
   margin: auto;
   padding: 48px 5vw 22px;
 }
-.intro {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 34px;
-}
 .eyebrow {
   font-size: 10px;
   letter-spacing: 2px;
@@ -111,28 +106,13 @@ main {
   color: #788b71;
   margin: 0 0 12px;
 }
-h1 {
+.header-title {
   font-family: Georgia, serif;
-  font-size: clamp(30px, 3.2vw, 46px);
+  font-size: clamp(16px, 3vw, 34px);
   font-weight: 400;
-  letter-spacing: -1.5px;
-  margin: 0 0 12px;
-  line-height: 1.15;
-}
-.intro p:not(.eyebrow) {
-  font-size: 13px;
-  color: var(--muted);
+  text-align: right;
   margin: 0;
-  line-height: 1.7;
-}
-.intro-note {
-  font-family: Georgia, serif;
-  font-style: italic;
-  color: #a0a88e;
-  transform: rotate(-7deg);
-  font-size: 18px;
-  line-height: 1.4;
-  padding-right: 30px;
+  line-height: 1.15;
 }
 .workspace {
   display: grid;
@@ -595,13 +575,10 @@ footer {
   .viewport {
     height: 400px;
   }
-  .intro-note {
-    display: none;
-  }
 }
 @media (max-width: 700px) {
   .header {
-    height: 68px;
+    min-height: 68px;
     padding: 0 20px;
   }
   .brand {
@@ -619,12 +596,6 @@ footer {
   }
   main {
     padding: 28px 18px 20px;
-  }
-  .intro {
-    margin-bottom: 24px;
-  }
-  .intro p:not(.eyebrow) {
-    font-size: 12px;
   }
   .workspace {
     display: flex;
@@ -669,9 +640,6 @@ footer {
   footer {
     flex-direction: column;
     gap: 5px;
-  }
-  .intro h1 {
-    font-size: 33px;
   }
   .examples img {
     width: 36px;
