@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Die von Vite ausgegebene lokale Adresse öffnen. Die vier mitgelieferten transparenten PNGs liegen unter `public/examples/`: Herz, Stern, Quadrat und eine längere, breite Schlangenlinie. Die Beispiele laufen durch dieselbe Bildverarbeitung wie eigene Dateien.
+Die von Vite ausgegebene lokale Adresse öffnen. Die vier mitgelieferten transparenten PNGs liegen unter `examples/`: Herz, Stern, Quadrat und eine längere, breite Schlangenlinie. Zu jedem Motiv gibt es eine PNG- und SVG-Datei zum manuellen Laden. Die Oberfläche startet leer und lädt keine Beispiele automatisch. SVGs werden lokal gerastert; eingebettete Inhalte und externe Referenzen werden abgelehnt.
 
 ## Einfach hosten
 
@@ -19,7 +19,7 @@ Die von Vite ausgegebene lokale Adresse öffnen. Die vier mitgelieferten transpa
 npm run build
 ```
 
-Den **Inhalt von `dist/`** auf beliebiges statisches Hosting kopieren, inklusive `assets/` und `examples/`. Relative Asset-Pfade erlauben auch Unterverzeichnisse. Es wird kein Node-Server auf dem Hosting benötigt. Der Webserver muss `.wasm`-Dateien ausliefern können (üblicher MIME-Typ: `application/wasm`). Alle Laufzeitdateien werden mitgeliefert; keine CDN-Abhängigkeit.
+Den **Inhalt von `dist/`** auf beliebiges statisches Hosting kopieren, inklusive `assets/`. Relative Asset-Pfade erlauben auch Unterverzeichnisse. Es wird kein Node-Server auf dem Hosting benötigt. Der Webserver muss `.wasm`-Dateien ausliefern können (üblicher MIME-Typ: `application/wasm`). Alle Laufzeitdateien werden mitgeliefert; keine CDN-Abhängigkeit.
 
 Zum lokalen Prüfen genau dieses Builds:
 
@@ -29,17 +29,21 @@ npm run preview
 
 ## Einstellungen
 
-| Parameter | Standard | Bedeutung |
-| --- | --- | --- |
-| Konturgröße | 80 mm | Längste Seite der erkannten Kontur, gemessen an der Wandmittellinie |
-| Wandhöhe | 15 mm | Ab Oberseite der Base |
-| Wandstärke | 1,2 mm | Symmetrisch um die Bildkontur |
-| Verjüngung ab | 10 mm | Ab Oberseite der Base; bis hier bleibt die Wand gleich dick |
-| Schneidkante | 0,4 mm | Obere Wandstärke; keine mathematisch scharfe Spitze |
-| Base | 5 mm | Vertikale Dicke der offenen, umlaufenden Base |
-| Randabstand | 5 mm | Von der äußeren unteren Wand bis zum äußeren Rand der Base |
+| Parameter     | Standard | Bedeutung                                                           |
+| ------------- | -------- | ------------------------------------------------------------------- |
+| Konturgröße   | 80 mm    | Längste Seite der erkannten Kontur, gemessen an der Wandmittellinie |
+| Wandhöhe      | 20 mm    | Ab Oberseite der Base                                               |
+| Wandstärke    | 1,2 mm   | Symmetrisch um die Bildkontur                                       |
+| Verjüngung ab | 15 mm    | Letzte 5 mm der 20-mm-Wand werden dünner                            |
+| Schneidkante  | 0,1 mm   | Obere Wandstärke; keine mathematisch scharfe Spitze                 |
+| Base          | 5 mm     | Vertikale Dicke der offenen, umlaufenden Base                       |
+| Randabstand   | 5 mm     | Von der äußeren unteren Wand bis zum äußeren Rand der Base          |
 
 Gesamthöhe = Base + Wandhöhe. Tatsächliche Außenmaße werden in der Vorschau angezeigt. Bei 80 mm Konturgröße ist die längste Seite mit Standardwand und Base etwa 91,2 mm. Die innere Öffnung geht durch die Base hindurch.
+
+## Bedienung
+
+Bild auswählen oder hineinziehen, **Konvertieren** klicken, Vorschau prüfen und STL herunterladen. Unter **Maße anpassen** lassen sich optional die eingeklappten Maße ändern. Änderungen werden erst beim nächsten Klick auf Konvertieren angewendet. Standard-Gesamthöhe: 25 mm (5 mm Base + 20 mm Wand).
 
 ## Verarbeitung
 

@@ -10,6 +10,13 @@
     "examples": "node scripts/create-examples.js",
     "test": "node --test"
   },
-  "dependencies": { "d3-contour": "^4.0.2", "manifold-3d": "^3.3.2", "three": "^0.180.0" },
-  "devDependencies": { "vite": "^7.2.2", "pngjs": "^7.0.0" }
+  "dependencies": {
+    "d3-contour": "^4.0.2",
+    "manifold-3d": "^3.3.2",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.2.2",
+    "pngjs": "^7.0.0"
+  }
 }
