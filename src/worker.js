@@ -21,7 +21,7 @@ self.onmessage = async ({
   } catch (error) {
     self.postMessage({
       id,
-      error: error.message || "Die Berechnung ist fehlgeschlagen.",
+      error: error.message || "Geometry calculation failed.",
     });
   }
 };

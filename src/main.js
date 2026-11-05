@@ -1,16 +1,16 @@
 import "./style.css";
+import { extractContour, contourAspect } from "./contour.js";
 import { defaults } from "./geometry.js";
 import { createViewer } from "./viewer.js";
 
 const $ = (id) => document.getElementById(id);
 const definitions = [
-  ["size", "Konturgröße", 15, 300, 1],
-  ["height", "Wandhöhe über Base", 2, 50, 0.5],
-  ["wall", "Wandstärke", 0.4, 5, 0.1],
-  ["taper", "Verjüngung ab Höhe", 0, 49, 0.5],
-  ["tip", "Dicke der Schneidkante", 0.1, 5, 0.1],
-  ["base", "Dicke der Base", 1, 15, 0.5],
-  ["margin", "Randabstand der Base", 0.5, 20, 0.5],
+  ["height", "Wall height above base", 2, 50, 0.5],
+  ["wall", "Wall thickness", 0.4, 5, 0.1],
+  ["taper", "Taper starts at", 0, 49, 0.5],
+  ["tip", "Cutting edge thickness", 0.1, 5, 0.1],
+  ["base", "Base thickness", 1, 15, 0.5],
+  ["margin", "Base margin", 0.5, 20, 0.5],
 ];
 $("parameters").innerHTML = definitions
   .map(
@@ -27,7 +27,8 @@ let viewer,
   sourceName = "",
   request = 0,
   loadId = 0,
-  valid = false;
+  valid = false,
+  aspect = null;
 function setStatus(message, type = "") {
   $("status").textContent = message;
   $("status").className = type;
@@ -36,7 +37,7 @@ try {
   viewer = createViewer($("viewer"));
 } catch {
   setStatus(
-    "Die 3D-Vorschau benötigt WebGL. Bitte einen Browser mit Hardwarebeschleunigung verwenden.",
+    "The 3D preview requires WebGL. Please use a browser with hardware acceleration.",
     "error",
   );
 }
@@ -51,17 +52,41 @@ function invalidate() {
 }
 function settingsChanged() {
   invalidate();
-  if (image) setStatus("Einstellungen geändert. Mit „Konvertieren“ anwenden.");
+  if (image) setStatus("Settings changed. Click Convert to apply.");
+}
+function syncSize() {
+  const width = $("size").valueAsNumber;
+  if (Number.isFinite(width)) $("size-slider").value = width;
+  $("footprint-height").disabled = !aspect;
+  $("footprint-height").value =
+    aspect && Number.isFinite(width)
+      ? Math.round(width * aspect * 100) / 100
+      : "";
+}
+function refreshAspect() {
+  aspect = null;
+  if (image) {
+    try {
+      aspect = contourAspect(
+        extractContour(image, Number($("threshold").value), $("invert").checked)
+          .points,
+      );
+    } catch {
+      /* The worker reports detection errors when Convert is clicked. */
+    }
+  }
+  syncSize();
 }
 function generate() {
   if (!image) return;
   invalidate();
   $("convert").disabled = true;
   $("busy").hidden = false;
-  setStatus("Deine Ausstechform wird berechnet …");
+  setStatus("Creating your cookie cutter …");
   const parameters = Object.fromEntries(
     definitions.map(([key]) => [key, $(key).valueAsNumber]),
   );
+  parameters.size = $("size").valueAsNumber;
   worker.postMessage({
     id: request,
     image,
@@ -84,7 +109,7 @@ worker.onmessage = ({ data }) => {
   $("stats").hidden = false;
   $("view-reset").hidden = false;
   $("viewer-hint").hidden = false;
-  const fmt = (n) => n.toLocaleString("de-DE", { maximumFractionDigits: 1 });
+  const fmt = (n) => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
   $("bounds").textContent =
     `${fmt(r.bounds.max[0] - r.bounds.min[0])} × ${fmt(r.bounds.max[1] - r.bounds.min[1])} mm`;
   $("total-height").textContent =
@@ -93,7 +118,7 @@ worker.onmessage = ({ data }) => {
   setStatus(
     data.warnings.length
       ? data.warnings.join(" ")
-      : "Fertig. Deine Ausstechform ist bereit zum Herunterladen.",
+      : "Done. Your cookie cutter is ready to download.",
     data.warnings.length ? "warning" : "",
   );
   valid = !!viewer;
@@ -103,7 +128,7 @@ worker.onmessage = ({ data }) => {
 worker.onerror = () => {
   invalidate();
   setStatus(
-    "Die Berechnung konnte nicht geladen werden. Bitte die Seite neu laden.",
+    "Could not load the geometry engine. Please reload the page.",
     "error",
   );
 };
@@ -170,11 +195,11 @@ async function imageBlob(file) {
     xml.documentElement.localName !== "svg" ||
     xml.querySelector("parsererror")
   )
-    throw new Error("Die SVG-Datei ist ungültig.");
+    throw new Error("The SVG file is invalid.");
   for (const element of xml.querySelectorAll("*")) {
     if (!elements.has(element.localName))
       throw new Error(
-        "Bitte eine einfache SVG-Silhouette ohne eingebettete Inhalte verwenden.",
+        "Please use a simple SVG silhouette without embedded content.",
       );
     for (const attribute of element.attributes) {
       if (
@@ -183,7 +208,7 @@ async function imageBlob(file) {
           attribute.name !== "xmlns")
       )
         throw new Error(
-          "Die SVG enthält nicht unterstützte Stile oder externe Inhalte. Bitte als PNG exportieren.",
+          "This SVG contains unsupported styles or external content. Please export it as a PNG.",
         );
     }
   }
@@ -194,18 +219,16 @@ async function imageBlob(file) {
 async function loadFile(file) {
   if (!file) return;
   if (!/\.(png|jpe?g|webp|svg)$/i.test(file.name)) {
-    setStatus(
-      "Bitte eine PNG-, SVG-, JPG- oder WebP-Datei auswählen.",
-      "error",
-    );
+    setStatus("Please choose a PNG, SVG, JPG or WebP file.", "error");
     return;
   }
   if (file.size > 20 * 1024 * 1024) {
-    setStatus("Bitte ein Bild mit höchstens 20 MB auswählen.", "error");
+    setStatus("Please choose an image no larger than 20 MB.", "error");
     return;
   }
   const token = ++loadId;
   image = null;
+  refreshAspect();
   invalidate();
   viewer?.clear();
   $("source").hidden = true;
@@ -213,7 +236,7 @@ async function loadFile(file) {
   $("empty").hidden = false;
   $("view-reset").hidden = true;
   $("viewer-hint").hidden = true;
-  setStatus("Bild wird lokal geöffnet …");
+  setStatus("Opening your image locally …");
   let url;
   try {
     const blob = await imageBlob(file);
@@ -226,7 +249,7 @@ async function loadFile(file) {
       height = decoded.naturalHeight;
     if (!width || !height || width > 16000 || height > 16000)
       throw new Error(
-        "Bitte ein Bild mit höchstens 16.000 Pixel pro Seite verwenden.",
+        "Please use an image no larger than 16,000 pixels per side.",
       );
     const scale = Math.min(1, 508 / Math.max(width, height));
     const canvas = document.createElement("canvas");
@@ -235,20 +258,18 @@ async function loadFile(file) {
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(decoded, 2, 2, canvas.width - 4, canvas.height - 4);
     image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    refreshAspect();
     sourceName = file.name;
     $("source-name").textContent = sourceName;
     $("source-description").textContent =
-      `${width} × ${height} px · lokal geladen`;
+      `${width} × ${height} px · loaded locally`;
     $("source-image").src = canvas.toDataURL("image/png");
     $("source").hidden = false;
     $("convert").disabled = false;
-    setStatus("Bild geladen. Ein Klick auf „Konvertieren“ genügt.");
+    setStatus("Image loaded. Click Convert to create your shape.");
   } catch (error) {
     if (token === loadId)
-      setStatus(
-        error.message || "Das Bild konnte nicht geöffnet werden.",
-        "error",
-      );
+      setStatus(error.message || "Could not open this image.", "error");
   } finally {
     if (url) URL.revokeObjectURL(url);
   }
@@ -260,12 +281,17 @@ $("file").addEventListener("change", () => {
 $("convert").addEventListener("click", generate);
 $("parameters").addEventListener("input", settingsChanged);
 $("threshold").addEventListener("input", () => {
+  refreshAspect();
   $("threshold-value").textContent = $("threshold").value;
   settingsChanged();
 });
-$("invert").addEventListener("change", settingsChanged);
+$("invert").addEventListener("change", () => {
+  refreshAspect();
+  settingsChanged();
+});
 $("reset").addEventListener("click", () => {
   for (const [key, value] of Object.entries(defaults)) $(key).value = value;
+  syncSize();
   settingsChanged();
 });
 $("view-reset").addEventListener("click", () => viewer?.reset());
@@ -290,5 +316,26 @@ $("download").addEventListener("click", () => {
   link.download = `ausstecherle-${sourceName.replace(/\.[^.]+$/, "").replace(/[^a-z0-9äöüß-]/gi, "-")}-${$("size").value}mm.stl`;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  setStatus("STL heruntergeladen. Im Slicer als Millimeter importieren.");
+  setStatus("STL downloaded. Import it in millimeters in your slicer.");
+});
+
+$("size-slider").addEventListener("input", () => {
+  $("size").value = $("size-slider").value;
+  syncSize();
+  settingsChanged();
+});
+$("size").addEventListener("input", () => {
+  syncSize();
+  settingsChanged();
+});
+$("footprint-height").addEventListener("input", () => {
+  const height = $("footprint-height").valueAsNumber;
+  if (!aspect || !Number.isFinite(height)) {
+    $("size").value = "";
+    invalidate();
+    return;
+  }
+  $("size").value = Math.round((height / aspect) * 1000) / 1000;
+  $("size-slider").value = $("size").value;
+  settingsChanged();
 });

@@ -337,7 +337,7 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 14px 12px;
 }
-.parameter:first-child {
+.parameters > .parameter:first-child {
   grid-column: 1/-1;
 }
 .parameter label {
@@ -745,4 +745,54 @@ footer {
 .empty-state p {
   font-size: 11px;
   line-height: 1.7;
+}
+
+.size-control {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 4px;
+}
+.size-control > .range-label {
+  font-size: 11px;
+  color: #526b59;
+}
+.size-control > .range-label span {
+  font-size: 9px;
+  color: #939e8d;
+}
+.size-control input[type="range"] {
+  width: 100%;
+  accent-color: var(--green);
+  margin: 14px 0;
+  cursor: pointer;
+}
+.size-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15px minmax(0, 1fr);
+  align-items: end;
+  gap: 5px;
+}
+.linked {
+  color: #8da183;
+  text-align: center;
+  padding-bottom: 10px;
+  font-size: 12px;
+}
+.number-wrap input:disabled {
+  opacity: 0.5;
+}
+.dimension-guide {
+  margin: 0 0 20px;
+}
+.dimension-guide img {
+  width: 100%;
+  display: block;
+  border-radius: 9px;
+}
+.dimension-guide figcaption {
+  font-size: 8px;
+  color: #8a9781;
+  text-align: center;
+  margin-top: 7px;
+  line-height: 1.5;
 }

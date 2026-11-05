@@ -64,36 +64,36 @@ export function extractContour(
   }
   if (!count)
     throw new Error(
-      "Keine Form erkannt. Schwellwert oder „Invertieren“ anpassen.",
+      "No shape detected. Adjust the threshold or invert the image.",
     );
   if (count > values.length * 0.98)
     throw new Error(
-      "Fast das ganze Bild ist gefüllt. Hintergrund oder „Invertieren“ prüfen.",
+      "Almost the entire image is filled. Check the background or invert the image.",
     );
   const polygons = contours().size([width, height]).thresholds([0.5])(values)[0]
     .coordinates;
   const sorted = polygons.sort(
     (a, b) => Math.abs(signedArea(b[0])) - Math.abs(signedArea(a[0])),
   );
-  if (!sorted.length) throw new Error("Keine geschlossene Kontur gefunden.");
+  if (!sorted.length) throw new Error("No closed contour found.");
   const raw = sorted[0][0].slice(0, -1).map(([x, y]) => [x, height - y]);
   const half = Math.floor(raw.length / 2);
   const points = [
     ...simplify(raw.slice(0, half + 1), 0.8).slice(0, -1),
     ...simplify([...raw.slice(half), raw[0]], 0.8).slice(0, -1),
   ];
-  if (points.length < 3) throw new Error("Die erkannte Form ist zu klein.");
+  if (points.length < 3) throw new Error("The detected shape is too small.");
   if (points.length > 600)
     throw new Error(
-      "Die Kontur ist zu komplex. Bitte eine einfachere Silhouette verwenden.",
+      "The contour is too complex. Please use a simpler silhouette.",
     );
   if (signedArea(points) < 0) points.reverse();
   const warnings = [];
   if (sorted.length > 1)
-    warnings.push("Mehrere Formen erkannt: verwendet wird nur die größte.");
+    warnings.push("Multiple shapes detected: only the largest is used.");
   if (sorted[0].length > 1)
     warnings.push(
-      "Innere Bildkonturen werden ignoriert; die Ausstechform bleibt innen offen.",
+      "Internal image contours are ignored; the cutter remains open inside.",
     );
   return { points, warnings };
 }
@@ -105,9 +105,17 @@ export function scaleContour(points, size) {
     maxX = Math.max(...xs),
     minY = Math.min(...ys),
     maxY = Math.max(...ys);
-  const scale = size / Math.max(maxX - minX, maxY - minY);
+  const scale = size / (maxX - minX);
   return points.map(([x, y]) => [
     (x - (minX + maxX) / 2) * scale,
     (y - (minY + maxY) / 2) * scale,
   ]);
+}
+
+export function contourAspect(points) {
+  const xs = points.map((p) => p[0]),
+    ys = points.map((p) => p[1]);
+  return (
+    (Math.max(...ys) - Math.min(...ys)) / (Math.max(...xs) - Math.min(...xs))
+  );
 }

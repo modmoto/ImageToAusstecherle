@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
 import Module from "manifold-3d";
-import { extractContour } from "../src/contour.js";
+import { extractContour, scaleContour, contourAspect } from "../src/contour.js";
 import { createCutter, defaults } from "../src/geometry.js";
 import * as THREE from "three";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
@@ -74,7 +74,7 @@ test("empty image and invalid parameters fail clearly", () => {
   assert.throws(
     () =>
       extractContour({ width: 8, height: 8, data: new Uint8Array(8 * 8 * 4) }),
-    /Keine Form/,
+    /No shape/,
   );
   assert.throws(
     () =>
@@ -88,7 +88,7 @@ test("empty image and invalid parameters fail clearly", () => {
         ],
         { ...defaults, tip: 2 },
       ),
-    /Schneidkante/,
+    /cutting edge/,
   );
   assert.throws(
     () =>
@@ -102,7 +102,7 @@ test("empty image and invalid parameters fail clearly", () => {
         ],
         { ...defaults, taper: 20 },
       ),
-    /Verjüngung/,
+    /Taper start/,
   );
 });
 test("parameter changes affect dimensions and wall sections", () => {
@@ -139,4 +139,22 @@ test("parameter changes affect dimensions and wall sections", () => {
   mid.delete();
   tip.delete();
   body.delete();
+});
+
+test("width is horizontal, including tall images; X and Y stay proportional", () => {
+  const points = [
+    [0, 0],
+    [20, 0],
+    [20, 80],
+    [0, 80],
+  ];
+  assert.equal(contourAspect(points), 4);
+  const scaled = scaleContour(points, 50);
+  const xs = scaled.map((p) => p[0]),
+    ys = scaled.map((p) => p[1]);
+  assert.equal(Math.max(...xs) - Math.min(...xs), 50);
+  assert.equal(Math.max(...ys) - Math.min(...ys), 200);
+  const body = createCutter(api, points, defaults);
+  assert.ok(Math.abs(body.bounds.max[0] - body.bounds.min[0] - 61.2) < 0.01);
+  assert.ok(Math.abs(body.bounds.max[1] - body.bounds.min[1] - 211.2) < 0.01);
 });

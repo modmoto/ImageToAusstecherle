@@ -1,85 +1,94 @@
 # Ausstecherle
 
-Eine kleine, statische Browser-Anwendung: PNG-Silhouette laden, Ausstechform gestalten und binäre STL herunterladen. Normales JavaScript, HTML und eigenes CSS, gebaut mit Vite. Kein React, TypeScript, Backend, Konto oder Bild-Upload.
+A small, static browser app: drop a silhouette, convert it into a cookie cutter, preview it in 3D and download a binary STL. Plain JavaScript, HTML and custom CSS with Vite. No React, TypeScript, backend, accounts or image uploads. The interface is in English.
 
-## Lokal starten
+## Run locally
 
-Node.js 22.12 oder neuer (alternativ 20.19+) und npm:
+Use Node.js 22.12+ (or 20.19+) and npm:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Die von Vite ausgegebene lokale Adresse öffnen. Die vier mitgelieferten transparenten PNGs liegen unter `examples/`: Herz, Stern, Quadrat und eine längere, breite Schlangenlinie. Zu jedem Motiv gibt es eine PNG- und SVG-Datei zum manuellen Laden. Die Oberfläche startet leer und lädt keine Beispiele automatisch. SVGs werden lokal gerastert; eingebettete Inhalte und externe Referenzen werden abgelehnt.
+Open the local URL printed by Vite.
 
-## Einfach hosten
+## Use it
+
+1. Choose or drop a PNG, SVG, JPG or WebP file.
+2. Set the size if needed. The slider below **Convert** defaults to **50 mm horizontal contour width (X)**. Type a precise width or height (Y); the other dimension is calculated from the detected contour while preserving proportions.
+3. Optionally expand **Adjust dimensions** for the annotated heart example and advanced settings.
+4. Click **Convert**, inspect the preview and download the STL.
+
+Changes only affect the 3D model after clicking Convert. Files stay on the device. The app starts empty and has no sample buttons.
+
+## Defaults
+
+| Setting            | Default      | Meaning                                                       |
+| ------------------ | ------------ | ------------------------------------------------------------- |
+| Contour width (X)  | 50 mm        | Horizontal span of the wall centerline, excluding the base    |
+| Contour height (Y) | Proportional | Calculated from the detected silhouette; can also be edited   |
+| Wall height        | 20 mm        | Above the top of the base                                     |
+| Wall thickness     | 1.2 mm       | Symmetrical around the image contour                          |
+| Taper starts at    | 15 mm        | The final 5 mm of the wall becomes thinner                    |
+| Cutting edge       | 0.1 mm       | Finite top thickness, not a mathematical point                |
+| Base thickness     | 5 mm         | Vertical thickness of the open flange                         |
+| Base margin        | 5 mm         | From the outside of the lower wall to the outside of the base |
+
+Total height is 25 mm by default. A square with 50 mm contour width has an outer width of 61.2 mm with the default wall and base. The opening continues through the base. The dimension guide is a schematic example, not a scale drawing or live preview.
+
+## Manual sample files
+
+`examples/` contains a heart, star, square and long snake silhouette, each as a **PNG and SVG**. Load these yourself using the file chooser or drag and drop. They are not automatically loaded or bundled into the website.
+
+```sh
+npm run examples
+```
+
+This regenerates the samples deterministically. SVG input supports plain local shapes; scripts, external references, styles and embedded HTML are rejected. SVGs are rasterized locally and then use the same contour pipeline as PNGs.
+
+## Static hosting
 
 ```sh
 npm run build
 ```
 
-Den **Inhalt von `dist/`** auf beliebiges statisches Hosting kopieren, inklusive `assets/`. Relative Asset-Pfade erlauben auch Unterverzeichnisse. Es wird kein Node-Server auf dem Hosting benötigt. Der Webserver muss `.wasm`-Dateien ausliefern können (üblicher MIME-Typ: `application/wasm`). Alle Laufzeitdateien werden mitgeliefert; keine CDN-Abhängigkeit.
+Upload the **contents of `dist/`** to ordinary static hosting, including `assets/` and `dimension-guide.svg`. Relative paths support subdirectories. No Node server is needed on the host. The server must serve `.wasm` files (normally `application/wasm`). Everything needed at runtime is included; no CDN dependency.
 
-Zum lokalen Prüfen genau dieses Builds:
+Preview the exact production build locally:
 
 ```sh
 npm run preview
 ```
 
-## Einstellungen
+## How it works
 
-| Parameter     | Standard | Bedeutung                                                           |
-| ------------- | -------- | ------------------------------------------------------------------- |
-| Konturgröße   | 80 mm    | Längste Seite der erkannten Kontur, gemessen an der Wandmittellinie |
-| Wandhöhe      | 20 mm    | Ab Oberseite der Base                                               |
-| Wandstärke    | 1,2 mm   | Symmetrisch um die Bildkontur                                       |
-| Verjüngung ab | 15 mm    | Letzte 5 mm der 20-mm-Wand werden dünner                            |
-| Schneidkante  | 0,1 mm   | Obere Wandstärke; keine mathematisch scharfe Spitze                 |
-| Base          | 5 mm     | Vertikale Dicke der offenen, umlaufenden Base                       |
-| Randabstand   | 5 mm     | Von der äußeren unteren Wand bis zum äußeren Rand der Base          |
+- Canvas decodes the image, proportionally downsamples it to at most 508 pixels, and adds a transparent border.
+- A threshold turns the image into a binary mask, compositing transparency over white.
+- **D3-Contour** detects closed contours; Ramer–Douglas–Peucker simplifies the largest outer boundary. This small library replaces the initially considered OpenCV package for simple silhouettes.
+- **Manifold WebAssembly** runs in a **Web Worker**. Offsets form an open base and wall. Tapered segment wedges and rounded joins narrow the wall without scaling the overall silhouette.
+- Manifold unites the parts into a connected solid. **Three.js** displays and exports the same mesh using STLExporter.
 
-Gesamthöhe = Base + Wandhöhe. Tatsächliche Außenmaße werden in der Vorschau angezeigt. Bei 80 mm Konturgröße ist die längste Seite mit Standardwand und Base etwa 91,2 mm. Die innere Öffnung geht durch die Base hindurch.
+Manifold objects are explicitly freed after each calculation. Stale calculation and image-loading results cannot replace newer settings.
 
-## Bedienung
-
-Bild auswählen oder hineinziehen, **Konvertieren** klicken, Vorschau prüfen und STL herunterladen. Unter **Maße anpassen** lassen sich optional die eingeklappten Maße ändern. Änderungen werden erst beim nächsten Klick auf Konvertieren angewendet. Standard-Gesamthöhe: 25 mm (5 mm Base + 20 mm Wand).
-
-## Verarbeitung
-
-1. Bild lokal einlesen, proportional auf höchstens 508 Pixel verkleinern und mit transparentem Rand versehen.
-2. Transparenz auf Weiß rechnen und per einstellbarem Schwellwert in eine Maske umwandeln.
-3. **D3-Contour** extrahiert geschlossene Konturen. Ramer–Douglas–Peucker vereinfacht die größte Außenkontur.
-4. In einem **Web Worker** berechnet **Manifold (WebAssembly)** die offene Base, gerade Wand und verjüngte Wand. Die Verjüngung besteht aus keilförmigen Segmenten mit gerundeten Verbindungen; sie skaliert nicht das gesamte Motiv.
-5. Manifold vereinigt die Teile zu einem zusammenhängenden Körper. **Three.js** zeigt genau dieses Mesh und exportiert es mit dem STLExporter.
-
-Die kleine D3-Contour-Bibliothek ersetzt hier das ursprünglich erwogene größere OpenCV-Paket; für klare Silhouetten ist keine allgemeine Computer-Vision-Bibliothek nötig. Manifold-Objekte werden nach jeder Berechnung explizit freigegeben. Veraltete Berechnungsergebnisse können eine neuere Einstellung nicht überschreiben.
-
-## Grenzen des Prototyps
-
-- Für klare Silhouetten gedacht, nicht für Fotos oder die automatische Interpretation gezeichneter Linien.
-- Nur die größte Außenkontur wird verwendet. Innere Bildkonturen werden ignoriert; weitere getrennte Motive werden gemeldet.
-- Die Schlangenlinie ist eine breite, geschlossene Silhouette, kein offener Mittellinienpfad.
-- Kleine Details sind durch Rasterauflösung und Konturvereinfachung angenähert. Sehr enge Stellen können durch Wand oder Base zusammenwachsen; vor dem Druck im Slicer prüfen.
-- Upload maximal 20 MB; zur Begrenzung der Rechenzeit höchstens 600 vereinfachte Konturpunkte.
-- Moderner Browser mit WebAssembly, Web Workers und WebGL benötigt.
-- STL enthält keine Einheit. Koordinaten werden in Millimetern erzeugt; im Slicer entsprechend importieren.
-- Geometrie und Export sind automatisiert geprüft; ein realer Probedruck steht noch aus.
-
-## Prüfen und Beispiele neu erzeugen
+## Tests and limits
 
 ```sh
 npm test
-npm run examples
 ```
 
-Die Pipeline-Tests lesen alle vier tatsächlichen PNG-Dateien, prüfen die Mesh-Kanten, Zusammenhang, durchgehende Öffnung, Maße und einen binären STL-Roundtrip. Weitere Tests prüfen ungültige Eingaben und geänderte Maße. Die PNGs werden deterministisch mit einem kleinen Node-Skript erzeugt.
+Seven tests cover all four actual PNGs, mesh edge closure and orientation, connectivity, the through opening, parameter changes, binary STL roundtrips and horizontal sizing of tall contours.
 
-## Dateien
+The prototype targets clear silhouettes, not photos or automatic centerline tracing. Only the largest outer contour is used; additional shapes and ignored internal contours are reported. Raster resolution and simplification approximate tiny details. Tight regions can merge when the wall or base is wide; inspect the result in a slicer. Inputs are limited to 20 MB and 600 simplified contour vertices.
 
-- `src/main.js`: Oberfläche, Dateieingabe, Einstellungen und Download
-- `src/contour.js`: Rastermaske, Konturerkennung und Vereinfachung
-- `src/geometry.js`: Parameterprüfung und Körperaufbau
-- `src/worker.js`: Berechnung abseits der Oberfläche
-- `src/viewer.js`: Three.js-Vorschau und STL-Export
-- `src/style.css`: gesamte Gestaltung
+A modern browser with WebGL, WebAssembly and Web Workers is required. STL does not record units: import in **millimeters**. Geometry and exports are tested; a physical print has not been tested.
+
+## Source layout
+
+- `src/main.js`: file loading, settings, linked width/height and downloads
+- `src/contour.js`: raster mask, contour detection, simplification and scaling
+- `src/geometry.js`: parameter validation and solid construction
+- `src/worker.js`: background geometry computation
+- `src/viewer.js`: Three.js preview and STL export
+- `src/style.css`: all interface styling
+- `public/dimension-guide.svg`: annotated heart and wall cross-section

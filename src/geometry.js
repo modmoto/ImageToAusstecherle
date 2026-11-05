@@ -1,7 +1,7 @@
 import { scaleContour } from "./contour.js";
 
 export const defaults = {
-  size: 80,
+  size: 50,
   height: 20,
   wall: 1.2,
   taper: 15,
@@ -13,23 +13,21 @@ export const defaults = {
 export function validateParameters(p) {
   for (const key of Object.keys(defaults))
     if (!Number.isFinite(p[key]))
-      throw new Error("Bitte gültige Maße eingeben.");
+      throw new Error("Please enter valid dimensions.");
   if (p.size < 15 || p.size > 300)
-    throw new Error("Die Konturgröße muss zwischen 15 und 300 mm liegen.");
+    throw new Error("Contour width must be between 15 and 300 mm.");
   if (p.height < 2 || p.height > 50)
-    throw new Error("Die Wandhöhe muss zwischen 2 und 50 mm liegen.");
+    throw new Error("Wall height must be between 2 and 50 mm.");
   if (p.wall < 0.4 || p.wall > 5)
-    throw new Error("Die Wandstärke muss zwischen 0,4 und 5 mm liegen.");
+    throw new Error("Wall thickness must be between 0.4 and 5 mm.");
   if (p.tip < 0.1 || p.tip > p.wall)
     throw new Error(
-      "Die Schneidkante muss mindestens 0,1 mm und höchstens so dick wie die Wand sein.",
+      "The cutting edge must be at least 0.1 mm and no thicker than the wall.",
     );
   if (p.taper < 0 || p.taper >= p.height)
-    throw new Error(
-      "Der Beginn der Verjüngung muss unterhalb der Wandhöhe liegen.",
-    );
+    throw new Error("Taper start must be below the wall height.");
   if (p.base < 1 || p.base > 15 || p.margin < 0.5 || p.margin > 20)
-    throw new Error("Base: 1–15 mm Dicke, Randabstand: 0,5–20 mm.");
+    throw new Error("Base thickness: 1–15 mm; base margin: 0.5–20 mm.");
 }
 
 // A tapered rectangular segment. Round frustums at its endpoints join the
@@ -77,7 +75,7 @@ export function createCutter(api, input, p) {
     const inner = keep(shape.offset(-p.wall / 2, "Round", 2, 32));
     if (inner.isEmpty())
       throw new Error(
-        "Die Wand ist für diese Form zu dick. Größe erhöhen oder Wandstärke reduzieren.",
+        "The wall is too thick for this shape. Increase the size or reduce wall thickness.",
       );
     const flange = keep(shape.offset(p.wall / 2 + p.margin, "Round", 2, 32));
     const baseSection = keep(flange.subtract(inner));
@@ -123,15 +121,13 @@ export function createCutter(api, input, p) {
       result.isEmpty() ||
       result.volume() <= 0
     )
-      throw new Error(
-        "Für diese Kontur konnte kein geschlossener Körper erzeugt werden.",
-      );
+      throw new Error("Could not create a closed solid for this contour.");
     const components = result.decompose();
     const connected = components.length === 1;
     components.forEach((item) => item.delete());
     if (!connected)
       throw new Error(
-        "Der Körper ist nicht zusammenhängend. Bitte Maße oder Bild anpassen.",
+        "The solid is disconnected. Please adjust the dimensions or image.",
       );
     const mesh = result.getMesh();
     const positions = new Float32Array(mesh.numVert * 3);

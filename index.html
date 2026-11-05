@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f7f7f2" />
     <meta
       name="description"
-      content="Bild ablegen, Ausstechform konvertieren, STL herunterladen. Komplett lokal im Browser."
+      content="Drop an image, convert it into a cookie cutter and download an STL. Entirely in your browser."
     />
-    <title>Ausstecherle — Vom Bild zur Form</title>
+    <title>Ausstecherle — From image to cookie cutter</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 54 8 30C-6 10 21 0 32 18 43 0 70 10 56 30Z' fill='%232b6557'/%3E%3C/svg%3E"
@@ -18,27 +18,25 @@
     <header class="header">
       <a class="brand" href="./"
         ><span class="brand-icon">a.</span> ausstecherle<span class="beta"
-          >PROTOTYP</span
+          >PROTOTYPE</span
         ></a
-      ><span class="privacy"><i></i> Alles bleibt in deinem Browser</span>
+      ><span class="privacy"><i></i> Everything stays in your browser</span>
     </header>
     <main>
       <div class="intro">
         <div>
-          <p class="eyebrow">VOM BILD ZUR FORM</p>
-          <h1>Kleine Form. Große Freude.</h1>
-          <p>
-            Bild ablegen. Konvertieren. Deine Ausstechform als STL mitnehmen.
-          </p>
+          <p class="eyebrow">FROM IMAGE TO COOKIE CUTTER</p>
+          <h1>Small shape. Big joy.</h1>
+          <p>Drop an image. Convert. Download your cookie cutter as an STL.</p>
         </div>
-        <span class="intro-note">Für deine nächste<br />Lieblingsform.</span>
+        <span class="intro-note">For your next<br />favorite shape.</span>
       </div>
       <div class="workspace">
         <aside class="controls">
           <section aria-labelledby="image-title">
             <div class="section-heading">
               <span class="step">01</span>
-              <h2 id="image-title">Dein Motiv</h2>
+              <h2 id="image-title">Your image</h2>
             </div>
             <label class="upload" id="drop-zone"
               ><input
@@ -53,42 +51,99 @@
                 aria-hidden="true"
               >
                 <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" /></svg
-              ><strong>Bild hier ablegen</strong
-              ><span>oder Datei auswählen · PNG, SVG, JPG, WebP</span></label
+              ><strong>Drop your image here</strong
+              ><span>or choose a file · PNG, SVG, JPG, WebP</span></label
             >
             <p class="tiny">
-              Eine klare Silhouette auf hellem oder transparentem Hintergrund.
+              A clear silhouette on a light or transparent background.
             </p>
             <div class="source" id="source" hidden>
-              <img id="source-image" alt="Gewähltes Motiv" />
+              <img id="source-image" alt="Selected image" />
               <div>
                 <strong id="source-name"></strong
                 ><span id="source-description"></span>
               </div>
             </div>
             <button id="convert" type="button" class="primary convert" disabled>
-              Konvertieren <span aria-hidden="true">→</span>
+              Convert <span aria-hidden="true">→</span>
             </button>
+            <div class="size-control">
+              <label class="range-label" for="size-slider"
+                >Size <span>Keep proportions</span></label
+              >
+              <input
+                id="size-slider"
+                type="range"
+                min="15"
+                max="300"
+                step="0.5"
+                value="50"
+                aria-label="Contour width slider"
+              />
+              <div class="size-fields">
+                <div class="parameter">
+                  <label for="size">Width · X</label>
+                  <div class="number-wrap">
+                    <input
+                      id="size"
+                      type="number"
+                      min="15"
+                      max="300"
+                      step="0.1"
+                      value="50"
+                      required
+                    /><span>mm</span>
+                  </div>
+                </div>
+                <span class="linked" aria-hidden="true">↔</span>
+                <div class="parameter">
+                  <label for="footprint-height">Height · Y</label>
+                  <div class="number-wrap">
+                    <input
+                      id="footprint-height"
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      placeholder="—"
+                      disabled
+                    /><span>mm</span>
+                  </div>
+                </div>
+              </div>
+              <p class="tiny">
+                Contour size, without the base. Y is calculated from your image.
+                You can edit either dimension.
+              </p>
+            </div>
           </section>
           <details class="settings" id="settings">
-            <summary>Maße anpassen <span>Optional</span></summary>
+            <summary>Adjust dimensions <span>Optional</span></summary>
             <div class="settings-content">
               <div class="section-heading">
-                <h2>Deine Maße</h2>
+                <h2>Your dimensions</h2>
                 <button type="button" id="reset" class="text-button">
-                  Zurücksetzen
+                  Reset defaults
                 </button>
               </div>
+              <figure class="dimension-guide">
+                <img
+                  src="./dimension-guide.svg"
+                  alt="Heart-shaped cutter dimension guide: contour width 50 mm; wall height 20 mm above a 5 mm base; base margin 5 mm; wall thickness 1.2 mm; taper starts at 15 mm and ends at a 0.1 mm cutting edge."
+                />
+                <figcaption>
+                  Default dimensions · schematic, not to scale
+                </figcaption>
+              </figure>
               <div id="parameters" class="parameters"></div>
               <p class="tiny">
-                Alle Maße in mm. Wandhöhe und Verjüngungsbeginn gelten ab
-                Oberseite der Base. Konturgröße = längste Seite der
-                Wandmittellinie; die Base kommt außen dazu.
+                All dimensions in mm. Wall height and taper start are measured
+                above the base. X and Y describe the wall centerline; the base
+                extends beyond it.
               </p>
               <details class="image-options">
-                <summary>Bilderkennung anpassen</summary>
+                <summary>Adjust image detection</summary>
                 <label class="range-label" for="threshold"
-                  >Schwellwert <output id="threshold-value">128</output></label
+                  >Threshold <output id="threshold-value">128</output></label
                 ><input
                   id="threshold"
                   type="range"
@@ -96,12 +151,12 @@
                   max="254"
                   value="128"
                 /><label class="checkbox"
-                  ><input id="invert" type="checkbox" /> Helles Motiv / dunkler
-                  Hintergrund</label
+                  ><input id="invert" type="checkbox" /> Light shape / dark
+                  background</label
                 >
                 <p class="tiny">
-                  Die größte Außenkontur wird verwendet. Innere Bildkonturen
-                  werden ignoriert.
+                  Uses the largest outer contour. Internal image contours are
+                  ignored.
                 </p>
               </details>
             </div>
@@ -110,56 +165,56 @@
         <section class="preview-panel" aria-labelledby="preview-title">
           <div class="preview-heading">
             <div>
-              <p class="eyebrow">DEINE AUSSTECHFORM</p>
-              <h2 id="preview-title">Hier entsteht deine Form.</h2>
+              <p class="eyebrow">YOUR COOKIE CUTTER</p>
+              <h2 id="preview-title">Your shape starts here.</h2>
             </div>
-            <span class="preview-badge">3D-VORSCHAU</span>
+            <span class="preview-badge">3D PREVIEW</span>
           </div>
           <div class="viewport" id="viewport">
-            <div class="viewer-label">3D / MILLIMETER</div>
+            <div class="viewer-label">3D / MILLIMETERS</div>
             <canvas
               id="viewer"
-              aria-label="Drehbare dreidimensionale Vorschau der Ausstechform"
+              aria-label="Rotatable 3D preview of your cookie cutter"
             ></canvas>
             <div class="empty-state" id="empty">
               <span aria-hidden="true">↗</span
-              ><strong>Ein Bild. Deine eigene Form.</strong>
-              <p>Lade dein Motiv und klicke auf Konvertieren.</p>
+              ><strong>One image. Your own shape.</strong>
+              <p>Load an image and click Convert.</p>
             </div>
             <div class="busy" id="busy" hidden>
-              <span></span> Deine Form entsteht …
+              <span></span> Creating your shape …
             </div>
             <button
               class="view-reset"
               id="view-reset"
-              title="Ansicht zurücksetzen"
-              aria-label="Ansicht zurücksetzen"
+              title="Reset view"
+              aria-label="Reset view"
               hidden
             >
               ↺
             </button>
             <div class="viewer-hint" id="viewer-hint" hidden>
-              Ziehen zum Drehen <span>·</span> Scrollen zum Zoomen
+              Drag to rotate <span>·</span> Scroll to zoom
             </div>
           </div>
           <div class="preview-bottom">
             <div class="stats" id="stats" hidden>
-              <div><span>AUSSENMAẞ</span><strong id="bounds">—</strong></div>
+              <div><span>OUTER SIZE</span><strong id="bounds">—</strong></div>
               <div>
-                <span>GESAMTHÖHE</span><strong id="total-height">—</strong>
+                <span>TOTAL HEIGHT</span><strong id="total-height">—</strong>
               </div>
-              <div><span>VOLUMEN</span><strong id="volume">—</strong></div>
+              <div><span>VOLUME</span><strong id="volume">—</strong></div>
             </div>
             <p id="status" role="status" aria-live="polite">
-              Dein Bild bleibt auf diesem Gerät.
+              Your image stays on this device.
             </p>
             <div class="export-row" id="export-row" hidden>
               <div>
-                <strong>Deine Form ist fertig.</strong>
-                <p>STL im Slicer als Millimeter importieren.</p>
+                <strong>Your shape is ready.</strong>
+                <p>Import the STL in millimeters in your slicer.</p>
               </div>
               <button id="download" class="primary" disabled>
-                STL herunterladen <span aria-hidden="true">↓</span>
+                Download STL <span aria-hidden="true">↓</span>
               </button>
             </div>
           </div>
@@ -167,9 +222,9 @@
       </div>
       <footer>
         <span
-          >Mit ein bisschen Fantasie wird aus einem Bild etwas zum
-          Anfassen.</span
-        ><span>Kein Account. Kein Upload. Einfach deine Form.</span>
+          >A little imagination turns an image into something you can
+          hold.</span
+        ><span>No account. No upload. Just your shape.</span>
       </footer>
     </main>
     <script type="module" src="/src/main.js"></script>

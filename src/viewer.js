@@ -102,7 +102,7 @@ export function createViewer(canvas) {
     },
     reset,
     exportSTL() {
-      if (!mesh) throw new Error("Noch keine Form vorhanden.");
+      if (!mesh) throw new Error("No shape has been created yet.");
       return new STLExporter().parse(mesh, { binary: true });
     },
   };
