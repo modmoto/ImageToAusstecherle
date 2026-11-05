@@ -796,3 +796,40 @@ footer {
   margin-top: 7px;
   line-height: 1.5;
 }
+
+/* Keep the next action visible when a conversion becomes stale. */
+.primary:disabled {
+  background: #dce1d8;
+  color: #7d8978;
+  opacity: 1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+#status {
+  font-size: 14px;
+  line-height: 1.65;
+  min-height: 23px;
+  padding: 13px 15px;
+  background: #f3f6ef;
+  border-radius: 7px;
+}
+#status.notice {
+  color: #765e27;
+  background: #fbf3dc;
+  font-weight: 600;
+}
+#status.error {
+  background: #fcf0ea;
+}
+.stats span {
+  font-size: 10px;
+}
+.stats strong {
+  font-size: 15px;
+}
+.export-row {
+  justify-content: flex-end;
+}
+footer {
+  font-size: 11px;
+}

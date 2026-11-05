@@ -46,13 +46,16 @@ function invalidate() {
   request++;
   valid = false;
   $("download").disabled = true;
-  $("export-row").hidden = true;
   $("busy").hidden = true;
   $("convert").disabled = !image;
 }
 function settingsChanged() {
   invalidate();
-  if (image) setStatus("Settings changed. Click Convert to apply.");
+  if (image)
+    setStatus(
+      "Settings changed. Click Convert again to update your STL.",
+      "notice",
+    );
 }
 function syncSize() {
   const width = $("size").valueAsNumber;
@@ -123,7 +126,6 @@ worker.onmessage = ({ data }) => {
   );
   valid = !!viewer;
   $("download").disabled = !valid;
-  $("export-row").hidden = !valid;
 };
 worker.onerror = () => {
   invalidate();

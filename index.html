@@ -17,10 +17,8 @@
   <body>
     <header class="header">
       <a class="brand" href="./"
-        ><span class="brand-icon">a.</span> ausstecherle<span class="beta"
-          >PROTOTYPE</span
-        ></a
-      ><span class="privacy"><i></i> Everything stays in your browser</span>
+        ><span class="brand-icon">a.</span> ausstecherle</a
+      >
     </header>
     <main>
       <div class="intro">
@@ -29,7 +27,6 @@
           <h1>Small shape. Big joy.</h1>
           <p>Drop an image. Convert. Download your cookie cutter as an STL.</p>
         </div>
-        <span class="intro-note">For your next<br />favorite shape.</span>
       </div>
       <div class="workspace">
         <aside class="controls">
@@ -128,7 +125,7 @@
               <figure class="dimension-guide">
                 <img
                   src="./dimension-guide.svg"
-                  alt="Heart-shaped cutter dimension guide: contour width 50 mm; wall height 20 mm above a 5 mm base; base margin 5 mm; wall thickness 1.2 mm; taper starts at 15 mm and ends at a 0.1 mm cutting edge."
+                  alt="Wall cross-section: 20 mm wall above a 5 mm base, 1.2 mm wall thickness, taper starting at 15 mm and a 0.1 mm cutting edge."
                 />
                 <figcaption>
                   Default dimensions · schematic, not to scale
@@ -208,11 +205,7 @@
             <p id="status" role="status" aria-live="polite">
               Your image stays on this device.
             </p>
-            <div class="export-row" id="export-row" hidden>
-              <div>
-                <strong>Your shape is ready.</strong>
-                <p>Import the STL in millimeters in your slicer.</p>
-              </div>
+            <div class="export-row" id="export-row">
               <button id="download" class="primary" disabled>
                 Download STL <span aria-hidden="true">↓</span>
               </button>

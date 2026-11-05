@@ -17,7 +17,7 @@ Open the local URL printed by Vite.
 
 1. Choose or drop a PNG, SVG, JPG or WebP file.
 2. Set the size if needed. The slider below **Convert** defaults to **50 mm horizontal contour width (X)**. Type a precise width or height (Y); the other dimension is calculated from the detected contour while preserving proportions.
-3. Optionally expand **Adjust dimensions** for the annotated heart example and advanced settings.
+3. Optionally expand **Adjust dimensions** for the wall cross-section diagram and advanced settings.
 4. Click **Convert**, inspect the preview and download the STL.
 
 Changes only affect the 3D model after clicking Convert. Files stay on the device. The app starts empty and has no sample buttons.
@@ -129,4 +129,4 @@ A modern browser with WebGL, WebAssembly and Web Workers is required. STL does n
 - `src/worker.js`: background geometry computation
 - `src/viewer.js`: Three.js preview and STL export
 - `src/style.css`: all interface styling
-- `public/dimension-guide.svg`: annotated heart and wall cross-section
+- `public/dimension-guide.svg`: annotated wall cross-section
