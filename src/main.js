@@ -19,6 +19,56 @@ $("parameters").innerHTML = definitions
   )
   .join("");
 
+const settingsKey = "ausstecherle.settings";
+const numericSettings = [
+  ...definitions.map(([key]) => key),
+  "size",
+  "threshold",
+  "contour-detail",
+];
+const savedSettings = {};
+try {
+  const stored = JSON.parse(localStorage.getItem(settingsKey));
+  for (const key of numericSettings) {
+    const value = stored?.[key];
+    const input = $(key);
+    if (
+      Number.isFinite(value) &&
+      value >= Number(input.min) &&
+      value <= Number(input.max)
+    ) {
+      input.value = value;
+      savedSettings[key] = value;
+    }
+  }
+  if (typeof stored?.invert === "boolean") $("invert").checked = stored.invert;
+} catch {
+  // The app also works when browser storage is unavailable.
+}
+$("size-slider").value = $("size").value;
+$("threshold-value").textContent = $("threshold").value;
+$("contour-detail-value").textContent = `${$("contour-detail").value} / 5`;
+
+function saveSettings() {
+  for (const key of numericSettings) {
+    const input = $(key);
+    const value = input.valueAsNumber;
+    if (
+      Number.isFinite(value) &&
+      !input.validity.rangeUnderflow &&
+      !input.validity.rangeOverflow
+    ) {
+      savedSettings[key] = value;
+    }
+  }
+  savedSettings.invert = $("invert").checked;
+  try {
+    localStorage.setItem(settingsKey, JSON.stringify(savedSettings));
+  } catch {
+    // Keep the current settings usable without persistent storage.
+  }
+}
+
 const profile = document.querySelector(".wall-profile");
 const measures = document.querySelectorAll(".wall-diagram .measure");
 const dimensionValues = document.querySelectorAll("[data-dimension]");
@@ -113,6 +163,7 @@ function invalidate() {
   $("convert").disabled = !image;
 }
 function settingsChanged() {
+  saveSettings();
   invalidate();
   if (image)
     setStatus(
