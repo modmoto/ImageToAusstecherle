@@ -768,13 +768,13 @@ footer {
 }
 .wall-diagram {
   position: relative;
-  height: 146px;
+  height: 134px;
 }
 .wall-profile {
   position: absolute;
-  inset: 16px 45px 20px 40px;
+  inset: 14px 36px 20px 22px;
   background: #78a486;
-  clip-path: polygon(96.3% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 81.5% 80%, 81.5% 20%);
+  clip-path: polygon(93% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 69% 80%, 69% 20%);
 }
 .measure {
   position: absolute;
