@@ -139,12 +139,22 @@
               <figure class="dimension-guide">
                 <figcaption>Wall cross-section · default dimensions</figcaption>
                 <div class="dimension-guide-body">
-                  <div class="wall-profile" aria-hidden="true"></div>
+                  <div class="wall-diagram" aria-hidden="true">
+                    <div class="wall-profile"></div>
+                    <span class="measure horizontal" style="--x:72px; --y:10px; --length:4px"><b>1</b></span>
+                    <span class="measure vertical" style="--x:94px; --y:34px; --length:60px"><b>2</b></span>
+                    <span class="measure vertical" style="--x:10px; --y:14px; --length:80px"><b>3</b></span>
+                    <span class="measure horizontal" style="--x:60px; --y:64px; --length:16px"><b>4</b></span>
+                    <span class="measure vertical" style="--x:94px; --y:94px; --length:20px"><b>5</b></span>
+                    <span class="measure horizontal" style="--x:22px; --y:125px; --length:38px"><b>6</b></span>
+                  </div>
                   <dl>
-                    <dt>Cutting edge</dt><dd>0.1 mm</dd>
-                    <dt>Outside taper</dt><dd>Starts 15 mm above the base</dd>
-                    <dt>Wall</dt><dd>20 mm tall, 1.2 mm thick</dd>
-                    <dt>Base</dt><dd>5 mm thick, 5 mm outer margin</dd>
+                    <dt>1. Cutting edge thickness</dt><dd>0.1 mm</dd>
+                    <dt>2. Taper start height</dt><dd>15 mm above the base</dd>
+                    <dt>3. Wall height</dt><dd>20 mm above the base</dd>
+                    <dt>4. Wall thickness</dt><dd>1.2 mm</dd>
+                    <dt>5. Base thickness</dt><dd>5 mm</dd>
+                    <dt>6. Base margin width</dt><dd>5 mm</dd>
                   </dl>
                 </div>
                 <p class="tiny">The inside stays vertical. Only the outside slopes inward.</p>
@@ -220,9 +230,7 @@
               </div>
               <div><span>VOLUME</span><strong id="volume">—</strong></div>
             </div>
-            <p id="status" role="status" aria-live="polite">
-              Your image stays on this device.
-            </p>
+            <p id="status" role="status" aria-live="polite"></p>
             <div class="export-row" id="export-row">
               <button id="download" class="primary" disabled>
                 Download STL <span aria-hidden="true">↓</span>
