@@ -768,13 +768,13 @@ footer {
 }
 .wall-diagram {
   position: relative;
-  height: 134px;
+  height: 146px;
 }
 .wall-profile {
   position: absolute;
-  inset: 14px 36px 20px 22px;
+  inset: 16px 45px 20px 40px;
   background: #78a486;
-  clip-path: polygon(93% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 69% 80%, 69% 20%);
+  clip-path: polygon(96.3% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 81.5% 80%, 81.5% 20%);
 }
 .measure {
   position: absolute;
@@ -879,4 +879,23 @@ footer {
   margin: 0;
   padding: 0;
   min-height: 0;
+}
+
+.measure.arrow::before,
+.measure.arrow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.measure.arrow::before {
+  top: 0;
+  transform: translateX(-50%) rotate(45deg);
+}
+.measure.arrow::after {
+  bottom: 0;
+  transform: translateX(-50%) rotate(225deg);
 }
