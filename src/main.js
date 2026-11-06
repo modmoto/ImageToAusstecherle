@@ -19,6 +19,69 @@ $("parameters").innerHTML = definitions
   )
   .join("");
 
+const profile = document.querySelector(".wall-profile");
+const measures = document.querySelectorAll(".wall-diagram .measure");
+const dimensionValues = document.querySelectorAll("[data-dimension]");
+
+function updateDimensionGuide() {
+  const values = Object.fromEntries(
+    definitions.map(([key, , min]) => {
+      const value = $(key).valueAsNumber;
+      return [
+        key,
+        Number.isFinite(value) ? Math.max(min, value) : defaults[key],
+      ];
+    }),
+  );
+  const { height, wall, taper, tip, base, margin } = values;
+  const verticalScale = Math.min(5, 100 / (height + base));
+  const horizontalScale = Math.min(10, 63 / (wall + margin));
+  const right = 82;
+  const bottom = 114;
+  const baseTop = bottom - base * verticalScale;
+  const top = baseTop - height * verticalScale;
+  const taperStart = baseTop - Math.min(taper, height) * verticalScale;
+  const wallWidth = wall * horizontalScale;
+  const tipWidth = Math.max(1, Math.min(tip, wall) * horizontalScale);
+  const wallLeft = right - wallWidth;
+  const baseLeft = wallLeft - margin * horizontalScale;
+
+  const outline = [
+    [right - tipWidth, top],
+    [right, top],
+    [right, bottom],
+    [baseLeft, bottom],
+    [baseLeft, baseTop],
+    [wallLeft, baseTop],
+    [wallLeft, taperStart],
+  ];
+  profile.style.clipPath = `polygon(${outline.map(([x, y]) => `${x}px ${y}px`).join(", ")})`;
+
+  const lines = [
+    [right - tipWidth, top - 4, tipWidth],
+    [94, taperStart, baseTop - taperStart],
+    [10, top, baseTop - top],
+    [wallLeft, (taperStart + baseTop) / 2, wallWidth],
+    [94, baseTop, bottom - baseTop],
+    [baseLeft, bottom + 12, wallLeft - baseLeft],
+  ];
+  measures.forEach((line, i) => {
+    const [x, y, length] = lines[i];
+    line.style.setProperty("--x", `${x}px`);
+    line.style.setProperty("--y", `${y}px`);
+    line.style.setProperty("--length", `${length}px`);
+    line.hidden = length === 0;
+  });
+  for (const output of dimensionValues) {
+    const key = output.dataset.dimension;
+    const value = $(key).valueAsNumber;
+    const suffix = key === "height" || key === "taper" ? " above the base" : "";
+    output.textContent = Number.isFinite(value) ? `${value} mm${suffix}` : "—";
+  }
+}
+
+updateDimensionGuide();
+
 const worker = new Worker(new URL("./worker.js", import.meta.url), {
   type: "module",
 });
@@ -286,7 +349,10 @@ $("file").addEventListener("change", () => {
   $("file").value = "";
 });
 $("convert").addEventListener("click", generate);
-$("parameters").addEventListener("input", settingsChanged);
+$("parameters").addEventListener("input", () => {
+  updateDimensionGuide();
+  settingsChanged();
+});
 $("threshold").addEventListener("input", () => {
   refreshAspect();
   $("threshold-value").textContent = $("threshold").value;
@@ -304,6 +370,7 @@ function updateDetail() {
 $("contour-detail").addEventListener("input", updateDetail);
 $("reset").addEventListener("click", () => {
   for (const [key, value] of Object.entries(defaults)) $(key).value = value;
+  updateDimensionGuide();
   $("contour-detail").value = defaultDetail;
   updateDetail();
 });

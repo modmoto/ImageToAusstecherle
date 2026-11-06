@@ -772,9 +772,8 @@ footer {
 }
 .wall-profile {
   position: absolute;
-  inset: 14px 36px 20px 22px;
+  inset: 0;
   background: #78a486;
-  clip-path: polygon(93% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 69% 80%, 69% 20%);
 }
 .measure {
   position: absolute;
@@ -787,14 +786,16 @@ footer {
   height: 7px;
   transform: translateY(-50%);
   border-inline: 1px solid;
-  background: linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
+  background: linear-gradient(currentColor, currentColor) center / 100% 1px
+    no-repeat;
 }
 .measure.vertical {
   width: 7px;
   height: var(--length);
   transform: translateX(-50%);
   border-block: 1px solid;
-  background: linear-gradient(currentColor, currentColor) center / 1px 100% no-repeat;
+  background: linear-gradient(currentColor, currentColor) center / 1px 100%
+    no-repeat;
 }
 .measure b {
   position: absolute;
@@ -819,6 +820,9 @@ footer {
 }
 .dimension-guide dt {
   font-weight: 650;
+}
+.dimension-guide label {
+  cursor: pointer;
 }
 .dimension-guide dd {
   margin: 0 0 6px;

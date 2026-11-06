@@ -166,8 +166,8 @@ test("width is horizontal, including tall images; X and Y stay proportional", ()
   assert.equal(Math.max(...xs) - Math.min(...xs), 50);
   assert.equal(Math.max(...ys) - Math.min(...ys), 200);
   const body = createCutter(api, points, defaults);
-  assert.ok(Math.abs(body.bounds.max[0] - body.bounds.min[0] - 61.2) < 0.01);
-  assert.ok(Math.abs(body.bounds.max[1] - body.bounds.min[1] - 211.2) < 0.01);
+  assert.ok(Math.abs(body.bounds.max[0] - body.bounds.min[0] - 61.5) < 0.01);
+  assert.ok(Math.abs(body.bounds.max[1] - body.bounds.min[1] - 211.5) < 0.01);
 });
 
 test("contour detail preserves more points at higher settings", () => {
