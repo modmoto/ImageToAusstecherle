@@ -1,7 +1,7 @@
 services:
   ausstecherle:
-    image: modmoto/imagetoausstecherle:${TAG:-latest}
-    container_name: ausstecherle
+    image: modmoto/image-to-ausstecherle:${TAG:-latest}
+    container_name: image-to-ausstecherle-${CONTAINER_SUFFIX}
     restart: unless-stopped
     expose:
       - "80"
