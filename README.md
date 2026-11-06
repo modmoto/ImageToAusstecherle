@@ -29,8 +29,8 @@ Changes only affect the 3D model after clicking Convert. Files stay on the devic
 | Contour width (X)  | 50 mm        | Horizontal span of the wall centerline, excluding the base    |
 | Contour height (Y) | Proportional | Calculated from the detected silhouette; can also be edited   |
 | Wall height        | 20 mm        | Above the top of the base                                     |
-| Wall thickness     | 1.2 mm       | Symmetrical around the image contour                          |
-| Taper starts at    | 15 mm        | The final 5 mm of the wall becomes thinner                    |
+| Wall thickness     | 1.2 mm       | Thickness below the outside taper                          |
+| Taper starts at    | 15 mm        | The outside slopes inward over the final 5 mm                    |
 | Cutting edge       | 0.1 mm       | Finite top thickness, not a mathematical point                |
 | Base thickness     | 5 mm         | Vertical thickness of the open flange                         |
 | Base margin        | 5 mm         | From the outside of the lower wall to the outside of the base |
@@ -53,7 +53,7 @@ This regenerates the samples deterministically. SVG input supports plain local s
 npm run build
 ```
 
-Upload the **contents of `dist/`** to ordinary static hosting, including `assets/` and `dimension-guide.svg`. Relative paths support subdirectories. No Node server is needed on the host. The server must serve `.wasm` files (normally `application/wasm`). Everything needed at runtime is included; no CDN dependency.
+Upload the **contents of `dist/`** to ordinary static hosting, including `assets/`. Relative paths support subdirectories. No Node server is needed on the host. The server must serve `.wasm` files (normally `application/wasm`). Everything needed at runtime is included; no CDN dependency.
 
 Preview the exact production build locally:
 
@@ -104,7 +104,7 @@ Open `http://127.0.0.1:8080/`. This local-only command serves plain HTTP; produc
 - Canvas decodes the image, proportionally downsamples it to at most 508 pixels, and adds a transparent border.
 - A threshold turns the image into a binary mask, compositing transparency over white.
 - **D3-Contour** detects closed contours; Ramer–Douglas–Peucker simplifies the largest outer boundary. This small library replaces the initially considered OpenCV package for simple silhouettes.
-- **Manifold WebAssembly** runs in a **Web Worker**. Offsets form an open base and wall. Tapered segment wedges and rounded joins narrow the wall without scaling the overall silhouette.
+- **Manifold WebAssembly** runs in a **Web Worker**. Offsets form an open base and wall. The outside tapers toward the cutting edge while the inner opening stays vertical.
 - Manifold unites the parts into a connected solid. **Three.js** displays and exports the same mesh using STLExporter.
 
 Manifold objects are explicitly freed after each calculation. Stale calculation and image-loading results cannot replace newer settings.
@@ -129,4 +129,3 @@ A modern browser with WebGL, WebAssembly and Web Workers is required. STL does n
 - `src/worker.js`: background geometry computation
 - `src/viewer.js`: Three.js preview and STL export
 - `src/style.css`: all interface styling
-- `public/dimension-guide.svg`: annotated wall cross-section

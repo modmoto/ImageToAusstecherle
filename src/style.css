@@ -750,19 +750,36 @@ footer {
   opacity: 0.5;
 }
 .dimension-guide {
-  margin: 0 0 20px;
-}
-.dimension-guide img {
-  width: 100%;
-  display: block;
-  border-radius: 9px;
+  margin: 16px 0;
+  padding: 12px;
+  background: #f3f6ef;
+  border-radius: 8px;
 }
 .dimension-guide figcaption {
-  font-size: 8px;
-  color: #8a9781;
-  text-align: center;
-  margin-top: 7px;
-  line-height: 1.5;
+  font-size: 12px;
+  font-weight: 650;
+}
+.dimension-guide-body {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+.wall-profile {
+  background: #78a486;
+  clip-path: polygon(93% 0, 100% 0, 100% 100%, 0 100%, 0 80%, 69% 80%, 69% 20%);
+}
+.dimension-guide dl {
+  margin: 0;
+  font-size: 11px;
+}
+.dimension-guide dt {
+  font-weight: 650;
+}
+.dimension-guide dd {
+  margin: 0 0 6px;
+  color: var(--muted);
 }
 
 /* Keep the next action visible when a conversion becomes stale. */

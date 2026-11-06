@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
 import Module from "manifold-3d";
-import { extractContour, scaleContour, contourAspect } from "../src/contour.js";
+import { extractContour, scaleContour, contourAspect, signedArea } from "../src/contour.js";
 import { createCutter, defaults } from "../src/geometry.js";
 import * as THREE from "three";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
@@ -135,6 +135,10 @@ test("parameter changes affect dimensions and wall sections", () => {
   const mid = body.slice(3 + 6),
     tip = body.slice(21 - 0.001);
   assert.ok(mid.area() > tip.area() * 2);
+  const openingArea = (section) =>
+    Math.min(...section.toPolygons().map((polygon) => Math.abs(signedArea(polygon))));
+  assert.ok(Math.abs(openingArea(mid) - 98 ** 2) < 0.01);
+  assert.ok(Math.abs(openingArea(tip) - openingArea(mid)) < 0.01);
   assert.equal(body.genus(), 1);
   mid.delete();
   tip.delete();

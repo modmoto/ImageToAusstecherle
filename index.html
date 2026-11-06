@@ -137,13 +137,17 @@
                 </p>
               </div>
               <figure class="dimension-guide">
-                <img
-                  src="./dimension-guide.svg"
-                  alt="Wall cross-section: 20 mm wall above a 5 mm base, 1.2 mm wall thickness, taper starting at 15 mm and a 0.1 mm cutting edge."
-                />
-                <figcaption>
-                  Default dimensions · schematic, not to scale
-                </figcaption>
+                <figcaption>Wall cross-section · default dimensions</figcaption>
+                <div class="dimension-guide-body">
+                  <div class="wall-profile" aria-hidden="true"></div>
+                  <dl>
+                    <dt>Cutting edge</dt><dd>0.1 mm</dd>
+                    <dt>Outside taper</dt><dd>Starts 15 mm above the base</dd>
+                    <dt>Wall</dt><dd>20 mm tall, 1.2 mm thick</dd>
+                    <dt>Base</dt><dd>5 mm thick, 5 mm outer margin</dd>
+                  </dl>
+                </div>
+                <p class="tiny">The inside stays vertical. Only the outside slopes inward.</p>
               </figure>
               <div id="parameters" class="parameters"></div>
               <p class="tiny">
