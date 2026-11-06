@@ -1,3 +1,4 @@
+import { imageBlob } from "./image.js";
 import "./style.css";
 import { extractContour, contourAspect, defaultDetail } from "./contour.js";
 import { defaults } from "./geometry.js";
@@ -190,7 +191,7 @@ function refreshAspect() {
           Number($("threshold").value),
           $("invert").checked,
           $("contour-detail").valueAsNumber,
-        ).points,
+        ).shapes.flatMap(({ points }) => points),
       );
     } catch {
       /* The worker reports detection errors when Convert is clicked. */
@@ -254,89 +255,6 @@ worker.onerror = () => {
   );
 };
 
-// SVG is decoded as an image, never inserted into the page. Accept only plain
-// local shape elements; scripts, external references and embedded HTML are rejected.
-async function imageBlob(file) {
-  if (
-    !file.name.toLowerCase().endsWith(".svg") &&
-    file.type !== "image/svg+xml"
-  )
-    return file;
-  const xml = new DOMParser().parseFromString(
-    await file.text(),
-    "image/svg+xml",
-  );
-  const elements = new Set([
-    "svg",
-    "g",
-    "path",
-    "rect",
-    "circle",
-    "ellipse",
-    "line",
-    "polyline",
-    "polygon",
-    "title",
-    "desc",
-  ]);
-  const attributes = new Set([
-    "xmlns",
-    "width",
-    "height",
-    "viewBox",
-    "preserveAspectRatio",
-    "d",
-    "points",
-    "x",
-    "y",
-    "x1",
-    "x2",
-    "y1",
-    "y2",
-    "cx",
-    "cy",
-    "r",
-    "rx",
-    "ry",
-    "fill",
-    "fill-rule",
-    "fill-opacity",
-    "stroke",
-    "stroke-width",
-    "stroke-linecap",
-    "stroke-linejoin",
-    "stroke-miterlimit",
-    "stroke-opacity",
-    "opacity",
-    "transform",
-    "id",
-    "version",
-  ]);
-  if (
-    xml.documentElement.localName !== "svg" ||
-    xml.querySelector("parsererror")
-  )
-    throw new Error("The SVG file is invalid.");
-  for (const element of xml.querySelectorAll("*")) {
-    if (!elements.has(element.localName))
-      throw new Error(
-        "Please use a simple SVG silhouette without embedded content.",
-      );
-    for (const attribute of element.attributes) {
-      if (
-        !attributes.has(attribute.name) ||
-        (/url\s*\(|javascript:|https?:/i.test(attribute.value) &&
-          attribute.name !== "xmlns")
-      )
-        throw new Error(
-          "This SVG contains unsupported styles or external content. Please export it as a PNG.",
-        );
-    }
-  }
-  return new Blob([new XMLSerializer().serializeToString(xml)], {
-    type: "image/svg+xml",
-  });
-}
 async function loadFile(file) {
   if (!file) return;
   if (!/\.(png|jpe?g|webp|svg)$/i.test(file.name)) {

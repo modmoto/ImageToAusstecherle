@@ -9,7 +9,7 @@ import {
   contourAspect,
   signedArea,
 } from "../src/contour.js";
-import { createCutter, defaults } from "../src/geometry.js";
+import { createCutter, createCutters, defaults } from "../src/geometry.js";
 import * as THREE from "three";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
@@ -278,6 +278,39 @@ test("smiley cutouts share three base-level supports sized by the base settings"
       slice.delete();
     }
     probe.delete();
+    body.delete();
+  }
+});
+
+test("three separate silhouettes produce three cutter pieces at their original positions", () => {
+  const png = new PNG({ width: 100, height: 100 });
+  const fill = (left, top, width, height) => {
+    for (let y = top; y < top + height; y++)
+      for (let x = left; x < left + width; x++)
+        png.data[(y * png.width + x) * 4 + 3] = 255;
+  };
+  fill(20, 10, 60, 25);
+  fill(10, 65, 16, 16);
+  fill(74, 65, 16, 16);
+  const { shapes } = extractContour(png);
+  assert.equal(shapes.length, 3);
+
+  const result = createCutters(api, shapes, defaults);
+  const body = new api.Manifold(new api.Mesh({
+    numProp: 3,
+    vertProperties: result.positions,
+    triVerts: result.indices,
+  }));
+  const pieces = body.decompose();
+  try {
+    assert.equal(body.status(), "NoError");
+    assert.equal(pieces.length, 3);
+    const wheels = pieces.filter((piece) => piece.boundingBox().max[1] < 0);
+    assert.equal(wheels.length, 2);
+    assert.ok(wheels.some((wheel) => wheel.boundingBox().max[0] < 0));
+    assert.ok(wheels.some((wheel) => wheel.boundingBox().min[0] > 0));
+  } finally {
+    pieces.forEach((piece) => piece.delete());
     body.delete();
   }
 });

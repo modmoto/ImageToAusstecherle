@@ -81,13 +81,11 @@ export function extractContour(
   );
   if (!sorted.length) throw new Error("No closed contour found.");
   const warnings = [];
-  const rings = sorted[0].map((ring) =>
-    simplifyContour(ring, height, detail, warnings),
-  );
-  const [points, ...holes] = rings;
-  if (sorted.length > 1)
-    warnings.push("Multiple shapes detected: only the largest is used.");
-  return { points, holes, warnings };
+  const shapes = sorted.map(([outline, ...holes]) => ({
+    points: simplifyContour(outline, height, detail, warnings),
+    holes: holes.map((ring) => simplifyContour(ring, height, detail, warnings)),
+  }));
+  return { ...shapes[0], shapes, warnings };
 }
 
 function simplifyContour(ring, height, detail, warnings) {

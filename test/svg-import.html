@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>SVG import regression</title>
+<pre id="result">Running…</pre>
+<script type="module">
+  import { extractContour } from "../src/contour.js";
+  import { imageBlob } from "../src/image.js";
+
+  const result = document.querySelector("#result");
+  try {
+    const response = await fetch("./fixtures/2386838.svg");
+    if (!response.ok) throw new Error("Could not load the fixture.");
+    const type = "image/svg+xml";
+    const source = await response.text();
+    const blob = await imageBlob(new File([source], "2386838.svg", { type }));
+    const parser = new DOMParser();
+    const original = parser.parseFromString(source, type);
+    const imported = parser.parseFromString(await blob.text(), type);
+    const paths = (doc) =>
+      Array.from(doc.querySelectorAll("path"), (path) => path.getAttribute("d"));
+
+    if (imported.doctype || imported.querySelector("metadata, parsererror"))
+      throw new Error("Expected clean SVG output.");
+    if (paths(imported).length !== 3 ||
+        JSON.stringify(paths(imported)) !== JSON.stringify(paths(original)))
+      throw new Error("Expected all three original paths.");
+
+    const url = URL.createObjectURL(blob);
+    try {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 324;
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 2, 2, 508, 320);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+      if (extractContour(pixels).shapes.length !== 3)
+        throw new Error("Expected a car body and two separate wheels.");
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+    result.textContent = "PASS: 2386838.svg imports with the car body and both wheels.";
+  } catch (error) {
+    result.textContent = "FAIL: " + error.message;
+    throw error;
+  }
+</script>
+</html>

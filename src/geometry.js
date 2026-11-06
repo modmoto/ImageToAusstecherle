@@ -122,54 +122,69 @@ function buildWall(api, inner, p, keep, isRim) {
   return { parts, baseSection, outer, flange };
 }
 
+function buildShape(api, { points: input, holes }, reference, p, keep) {
+  const points = scaleContour(input, p.size, reference);
+  const makeOpening = (ring) => {
+    const section = keep(new api.CrossSection([ring]));
+    return keep(section.offset(-p.wall / 2, "Round", 2, 32));
+  };
+  const inner = makeOpening(points);
+  const rim = buildWall(api, inner, p, keep, true);
+  const parts = rim.parts;
+  const supports = [];
+  if (holes.length) {
+    if (holes.length > 8)
+      throw new Error("Use at most eight internal cutouts.");
+    const openings = holes.map((ring) =>
+      makeOpening(scaleContour(ring, p.size, reference)),
+    );
+    const inserts = openings.map((opening) =>
+      buildWall(api, opening, p, keep, false),
+    );
+    const plan = planSupports(api, inner, rim, openings, inserts, p, keep);
+    supports.push(...plan.map(({ from, to, a, b, length }) => ({
+      from,
+      to,
+      a,
+      b,
+      length,
+    })));
+    parts.push(...inserts.flatMap(({ parts }) => parts));
+    parts.push(...plan.map(({ section }) => keep(section.extrude(p.base))));
+  }
+  const result = keep(api.Manifold.union(parts));
+  if (
+    result.status() !== "NoError" ||
+    result.isEmpty() ||
+    result.volume() <= 0
+  )
+    throw new Error("Could not create a closed solid for this contour.");
+  const components = result.decompose();
+  const connected = components.length === 1;
+  components.forEach((item) => item.delete());
+  if (!connected)
+    throw new Error(
+      "The solid is disconnected. Please adjust the dimensions or image.",
+    );
+  return { result, points, supports };
+}
+
 export function createCutter(api, input, p, holes = []) {
+  return createCutters(api, [{ points: input, holes }], p);
+}
+
+export function createCutters(api, shapes, p) {
   validateParameters(p);
   const owned = [];
   const keep = (value) => (owned.push(value), value);
   try {
-    const points = scaleContour(input, p.size);
-    const makeOpening = (ring) => {
-      const section = keep(new api.CrossSection([ring]));
-      return keep(section.offset(-p.wall / 2, "Round", 2, 32));
-    };
-    const inner = makeOpening(points);
-    const rim = buildWall(api, inner, p, keep, true);
-    const parts = rim.parts;
-    let supports = [];
-    if (holes.length) {
-      if (holes.length > 8)
-        throw new Error("Use at most eight internal cutouts.");
-      const openings = holes.map((ring) =>
-        makeOpening(scaleContour(ring, p.size, input)),
-      );
-      const inserts = openings.map((opening) =>
-        buildWall(api, opening, p, keep, false),
-      );
-      const plan = planSupports(api, inner, rim, openings, inserts, p, keep);
-      supports = plan.map(({ from, to, a, b, length }) => ({
-        from,
-        to,
-        a,
-        b,
-        length,
-      }));
-      parts.push(...inserts.flatMap(({ parts }) => parts));
-      parts.push(...plan.map(({ section }) => keep(section.extrude(p.base))));
-    }
-    const result = keep(api.Manifold.union(parts));
-    if (
-      result.status() !== "NoError" ||
-      result.isEmpty() ||
-      result.volume() <= 0
-    )
-      throw new Error("Could not create a closed solid for this contour.");
-    const components = result.decompose();
-    const connected = components.length === 1;
-    components.forEach((item) => item.delete());
-    if (!connected)
-      throw new Error(
-        "The solid is disconnected. Please adjust the dimensions or image.",
-      );
+    const reference = shapes.flatMap(({ points }) => points);
+    const cutters = shapes.map((shape) => buildShape(api, shape, reference, p, keep));
+    const result = cutters.length === 1
+      ? cutters[0].result
+      : keep(api.Manifold.union(cutters.map((cutter) => cutter.result)));
+    if (result.status() !== "NoError")
+      throw new Error("Could not combine the cutters into a closed mesh.");
     const mesh = result.getMesh();
     const positions = new Float32Array(mesh.numVert * 3);
     for (let i = 0; i < mesh.numVert; i++)
@@ -184,8 +199,8 @@ export function createCutter(api, input, p, holes = []) {
       volume: result.volume(),
       bounds,
       triangles: mesh.numTri,
-      contour: points,
-      supports,
+      contour: cutters[0].points,
+      supports: cutters.flatMap((cutter) => cutter.supports),
     };
   } finally {
     for (let i = owned.length - 1; i >= 0; i--) owned[i].delete();

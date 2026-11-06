@@ -1,7 +1,7 @@
 import Module from "manifold-3d";
 import wasmUrl from "manifold-3d/manifold.wasm?url";
 import { extractContour } from "./contour.js";
-import { createCutter } from "./geometry.js";
+import { createCutters } from "./geometry.js";
 
 const ready = Module({ locateFile: () => wasmUrl }).then((api) => {
   api.setup();
@@ -12,13 +12,13 @@ self.onmessage = async ({
 }) => {
   try {
     const api = await ready;
-    const { points, holes, warnings } = extractContour(
+    const { shapes, warnings } = extractContour(
       image,
       threshold,
       invert,
       detail,
     );
-    const result = createCutter(api, points, parameters, holes);
+    const result = createCutters(api, shapes, parameters);
     self.postMessage({ id, result, warnings }, [
       result.positions.buffer,
       result.indices.buffer,
