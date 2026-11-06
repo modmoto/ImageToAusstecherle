@@ -1,7 +1,4 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+name: $(Build.BuildId)
 
 trigger:
 - main
@@ -10,10 +7,39 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: UseNode@1
+  inputs:
+    version: '22.x'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    set -e
+    npm ci
+    npm test
+  displayName: Install dependencies and run tests
+
+- task: Docker@2
+  displayName: Build and push Docker image
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  inputs:
+    containerRegistry: official-docker-modmoto
+    repository: modmoto/imagetoausstecherle
+    command: buildAndPush
+    Dockerfile: Dockerfile
+    buildContext: .
+    tags: |
+      $(Build.BuildId)
+      latest
+
+- bash: |
+    set -e
+    mkdir -p "$(Build.ArtifactStagingDirectory)"
+    sed 's/${TAG:-latest}/${TAG:-$(Build.BuildId)}/' docker-compose.yml > "$(Build.ArtifactStagingDirectory)/docker-compose.yml"
+    docker compose -f "$(Build.ArtifactStagingDirectory)/docker-compose.yml" config --quiet
+  displayName: Stage Compose file with build image tag
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+- task: PublishBuildArtifacts@1
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  inputs:
+    PathtoPublish: $(Build.ArtifactStagingDirectory)
+    ArtifactName: drop

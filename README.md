@@ -13,7 +13,7 @@ npm run dev
 
 Open the URL printed by Vite. Try a silhouette from [examples](examples/).
 
-For static hosting, run `npm run build` and serve the contents of `dist/`. On a Docker host with the shared `caddy` network, run `docker compose up -d --build` and add the site to your existing Caddy configuration using [the example](docker/Caddyfile.example).
+For static hosting, run `npm run build` and serve the contents of `dist/`. On a Docker host with the shared `caddy` network, run `docker compose up -d --pull always` and add the site to your existing Caddy configuration using [the example](docker/Caddyfile.example).
 
 ## Screenshots
 

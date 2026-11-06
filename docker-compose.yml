@@ -1,7 +1,6 @@
 services:
   ausstecherle:
-    build: .
-    image: imagetoausstecherle:local
+    image: modmoto/imagetoausstecherle:${TAG:-latest}
     container_name: ausstecherle
     restart: unless-stopped
     expose:
