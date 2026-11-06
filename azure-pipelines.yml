@@ -22,7 +22,7 @@ steps:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   inputs:
     containerRegistry: official-docker-modmoto
-    repository: modmoto/imagetoausstecherle
+    repository: modmoto/image-to-ausstecherle
     command: buildAndPush
     Dockerfile: Dockerfile
     buildContext: .
