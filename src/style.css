@@ -885,6 +885,10 @@ footer {
   min-height: 0;
 }
 
+#status:empty + .export-row {
+  margin-top: 16px;
+}
+
 .measure.arrow::before,
 .measure.arrow::after {
   content: "";
