@@ -141,23 +141,57 @@
                 <div class="dimension-guide-body">
                   <div class="wall-diagram" aria-hidden="true">
                     <div class="wall-profile"></div>
-                    <span class="measure horizontal" style="--x:66px; --y:12px; --length:1px"><b>1</b></span>
-                    <span class="measure vertical" style="--x:94px; --y:38px; --length:66px"><b>2</b></span>
-                    <span class="measure vertical" style="--x:23px; --y:16px; --length:88px"><b>3</b></span>
-                    <span class="measure horizontal" style="--x:62px; --y:72px; --length:5px"><b>4</b></span>
-                    <span class="measure vertical arrow" style="--x:82px; --y:104px; --length:22px"><b>5</b></span>
-                    <span class="measure horizontal" style="--x:40px; --y:138px; --length:22px"><b>6</b></span>
+                    <span
+                      class="measure horizontal"
+                      style="--x: 66px; --y: 12px; --length: 1px"
+                      ><b>1</b></span
+                    >
+                    <span
+                      class="measure vertical"
+                      style="--x: 94px; --y: 38px; --length: 66px"
+                      ><b>2</b></span
+                    >
+                    <span
+                      class="measure vertical"
+                      style="--x: 23px; --y: 16px; --length: 88px"
+                      ><b>3</b></span
+                    >
+                    <span
+                      class="measure horizontal"
+                      style="--x: 62px; --y: 72px; --length: 5px"
+                      ><b>4</b></span
+                    >
+                    <span
+                      class="measure vertical arrow"
+                      style="--x: 82px; --y: 104px; --length: 22px"
+                      ><b>5</b></span
+                    >
+                    <span
+                      class="measure horizontal"
+                      style="--x: 40px; --y: 138px; --length: 22px"
+                      ><b>6</b></span
+                    >
                   </div>
                   <dl>
-                    <dt>1. Cutting edge thickness</dt><dd>0.1 mm</dd>
-                    <dt>2. Taper start height</dt><dd>15 mm above the base</dd>
-                    <dt>3. Wall height</dt><dd>20 mm above the base</dd>
-                    <dt>4. Wall thickness</dt><dd>1.2 mm</dd>
-                    <dt>5. Base thickness</dt><dd>5 mm</dd>
-                    <dt>6. Base margin width</dt><dd>5 mm</dd>
+                    <dt>1. Cutting edge thickness</dt>
+                    <dd>0.1 mm</dd>
+                    <dt>2. Taper start height</dt>
+                    <dd>15 mm above the base</dd>
+                    <dt>3. Wall height</dt>
+                    <dd>20 mm above the base</dd>
+                    <dt>4. Wall thickness</dt>
+                    <dd>1.2 mm</dd>
+                    <dt>5. Base thickness</dt>
+                    <dd>5 mm</dd>
+                    <dt>6. Base margin width</dt>
+                    <dd>5 mm</dd>
                   </dl>
                 </div>
-                <p class="tiny">The inside stays vertical. Only the outside slopes inward.</p>
+                <p class="tiny">
+                  The inside stays vertical. Only the outside slopes inward.
+                  Supports use Base Thickness for height and Base Margin for
+                  width.
+                </p>
               </figure>
               <div id="parameters" class="parameters"></div>
               <p class="tiny">
@@ -180,8 +214,8 @@
                   background</label
                 >
                 <p class="tiny">
-                  Uses the largest outer contour. Internal image contours are
-                  ignored.
+                  Uses the largest outer contour. Enclosed cutouts get three
+                  supports.
                 </p>
               </details>
             </div>

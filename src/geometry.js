@@ -1,3 +1,4 @@
+import { planSupports } from "./supports.js";
 import { scaleContour } from "./contour.js";
 
 export const defaults = {
@@ -64,44 +65,76 @@ function wedge(api, a, b, lower, upper, height) {
   );
 }
 
-export function createCutter(api, input, p) {
+function buildWall(api, inner, p, keep, isRim) {
+  if (inner.isEmpty())
+    throw new Error(
+      "The wall is too thick for this shape. Increase the size or reduce wall thickness.",
+    );
+  const outer = keep(inner.offset(p.wall, "Round", 2, 32));
+  const flange = isRim
+    ? keep(inner.offset(p.wall + p.margin, "Round", 2, 32))
+    : outer;
+  const baseSection = keep(flange.subtract(inner));
+  const base = keep(baseSection.extrude(p.base));
+  const wallSection = keep(outer.subtract(inner));
+  const parts = [base];
+  if (p.taper > 0)
+    parts.push(
+      keep(keep(wallSection.extrude(p.taper)).translate([0, 0, p.base])),
+    );
+  const taperHeight = p.height - p.taper;
+  const taperParts = [];
+  for (const boundary of inner.toPolygons()) {
+    for (let i = 0; i < boundary.length; i++) {
+      const a = boundary[i];
+      const b = boundary[(i + 1) % boundary.length];
+      taperParts.push(keep(wedge(api, a, b, p.wall, p.tip, taperHeight)));
+      const join = keep(api.Manifold.cylinder(taperHeight, p.wall, p.tip, 32));
+      taperParts.push(keep(join.translate([a[0], a[1], 0])));
+    }
+  }
+  // Cut the same vertical opening through the tapered section as the base and wall.
+  const taperStroke = keep(api.Manifold.union(taperParts));
+  const opening = keep(inner.extrude(taperHeight));
+  const taperedWall = keep(taperStroke.subtract(opening));
+  parts.push(keep(taperedWall.translate([0, 0, p.base + p.taper])));
+  return { parts, baseSection, outer, flange };
+}
+
+export function createCutter(api, input, p, holes = []) {
   validateParameters(p);
   const owned = [];
   const keep = (value) => (owned.push(value), value);
   try {
     const points = scaleContour(input, p.size);
-    const shape = keep(new api.CrossSection([points]));
-    const inner = keep(shape.offset(-p.wall / 2, "Round", 2, 32));
-    if (inner.isEmpty())
-      throw new Error(
-        "The wall is too thick for this shape. Increase the size or reduce wall thickness.",
+    const makeOpening = (ring) => {
+      const section = keep(new api.CrossSection([ring]));
+      return keep(section.offset(-p.wall / 2, "Round", 2, 32));
+    };
+    const inner = makeOpening(points);
+    const rim = buildWall(api, inner, p, keep, true);
+    const parts = rim.parts;
+    let supports = [];
+    if (holes.length) {
+      if (holes.length > 8)
+        throw new Error("Use at most eight internal cutouts.");
+      const openings = holes.map((ring) =>
+        makeOpening(scaleContour(ring, p.size, input)),
       );
-    const outer = keep(inner.offset(p.wall, "Round", 2, 32));
-    const flange = keep(inner.offset(p.wall + p.margin, "Round", 2, 32));
-    const baseSection = keep(flange.subtract(inner));
-    const base = keep(baseSection.extrude(p.base));
-    const wallSection = keep(outer.subtract(inner));
-    const parts = [base];
-    if (p.taper > 0)
-      parts.push(
-        keep(keep(wallSection.extrude(p.taper)).translate([0, 0, p.base])),
+      const inserts = openings.map((opening) =>
+        buildWall(api, opening, p, keep, false),
       );
-    const taperHeight = p.height - p.taper;
-    const taperParts = [];
-    for (const boundary of inner.toPolygons()) {
-      for (let i = 0; i < boundary.length; i++) {
-        const a = boundary[i];
-        const b = boundary[(i + 1) % boundary.length];
-        taperParts.push(keep(wedge(api, a, b, p.wall, p.tip, taperHeight)));
-        const join = keep(api.Manifold.cylinder(taperHeight, p.wall, p.tip, 32));
-        taperParts.push(keep(join.translate([a[0], a[1], 0])));
-      }
+      const plan = planSupports(api, inner, rim, openings, inserts, p, keep);
+      supports = plan.map(({ from, to, a, b, length }) => ({
+        from,
+        to,
+        a,
+        b,
+        length,
+      }));
+      parts.push(...inserts.flatMap(({ parts }) => parts));
+      parts.push(...plan.map(({ section }) => keep(section.extrude(p.base))));
     }
-    // Cut the same vertical opening through the tapered section as the base and wall.
-    const taperStroke = keep(api.Manifold.union(taperParts));
-    const opening = keep(inner.extrude(taperHeight));
-    const taperedWall = keep(taperStroke.subtract(opening));
-    parts.push(keep(taperedWall.translate([0, 0, p.base + p.taper])));
     const result = keep(api.Manifold.union(parts));
     if (
       result.status() !== "NoError" ||
@@ -131,6 +164,7 @@ export function createCutter(api, input, p) {
       bounds,
       triangles: mesh.numTri,
       contour: points,
+      supports,
     };
   } finally {
     for (let i = owned.length - 1; i >= 0; i--) owned[i].delete();

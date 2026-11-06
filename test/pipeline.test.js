@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PNG } from "pngjs";
 import Module from "manifold-3d";
-import { extractContour, scaleContour, contourAspect, signedArea } from "../src/contour.js";
+import {
+  extractContour,
+  scaleContour,
+  contourAspect,
+  signedArea,
+} from "../src/contour.js";
 import { createCutter, defaults } from "../src/geometry.js";
 import * as THREE from "three";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
@@ -136,7 +141,9 @@ test("parameter changes affect dimensions and wall sections", () => {
     tip = body.slice(21 - 0.001);
   assert.ok(mid.area() > tip.area() * 2);
   const openingArea = (section) =>
-    Math.min(...section.toPolygons().map((polygon) => Math.abs(signedArea(polygon))));
+    Math.min(
+      ...section.toPolygons().map((polygon) => Math.abs(signedArea(polygon))),
+    );
   assert.ok(Math.abs(openingArea(mid) - 98 ** 2) < 0.01);
   assert.ok(Math.abs(openingArea(tip) - openingArea(mid)) < 0.01);
   assert.equal(body.genus(), 1);
@@ -191,4 +198,60 @@ test("dense contours at maximum detail are simplified to the point limit", () =>
   );
   assert.ok(points.length >= 3 && points.length <= 600);
   assert.ok(warnings.some((message) => message.includes("detail was reduced")));
+});
+
+test("smiley cutouts share three base-level supports sized by the base settings", () => {
+  const png = PNG.sync.read(
+    readFileSync(new URL("../examples/smiley.png", import.meta.url)),
+  );
+  const { points, holes } = extractContour(png);
+  assert.equal(holes.length, 4);
+
+  for (const dimensions of [defaults, { ...defaults, base: 3, margin: 2 }]) {
+    const result = createCutter(api, points, dimensions, holes);
+    for (let insert = 1; insert <= holes.length; insert++) {
+      assert.equal(
+        result.supports.filter(
+          ({ from, to }) => from === insert || to === insert,
+        ).length,
+        3,
+      );
+    }
+    assert.ok(result.supports.some(({ from }) => from !== 0));
+
+    const body = new api.Manifold(
+      new api.Mesh({
+        numProp: 3,
+        vertProperties: result.positions,
+        triVerts: result.indices,
+      }),
+    );
+    const { a, b, length } = result.supports.reduce((longest, support) =>
+      support.length > longest.length ? support : longest,
+    );
+    const x = (b[0] - a[0]) / length;
+    const y = (b[1] - a[1]) / length;
+    const cx = (a[0] + b[0]) / 2;
+    const cy = (a[1] + b[1]) / 2;
+    const probe = new api.CrossSection([
+      [
+        [-0.05, -dimensions.margin],
+        [0.05, -dimensions.margin],
+        [0.05, dimensions.margin],
+        [-0.05, dimensions.margin],
+      ].map(([u, v]) => [cx + x * u - y * v, cy + y * u + x * v]),
+    ]);
+    for (const [z, expected] of [
+      [dimensions.base - 0.01, dimensions.margin * 0.1],
+      [dimensions.base + 0.01, 0],
+    ]) {
+      const slice = body.slice(z);
+      const intersection = slice.intersect(probe);
+      assert.ok(Math.abs(intersection.area() - expected) < 0.001);
+      intersection.delete();
+      slice.delete();
+    }
+    probe.delete();
+    body.delete();
+  }
 });

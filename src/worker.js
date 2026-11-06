@@ -12,13 +12,13 @@ self.onmessage = async ({
 }) => {
   try {
     const api = await ready;
-    const { points, warnings } = extractContour(
+    const { points, holes, warnings } = extractContour(
       image,
       threshold,
       invert,
       detail,
     );
-    const result = createCutter(api, points, parameters);
+    const result = createCutter(api, points, parameters, holes);
     self.postMessage({ id, result, warnings }, [
       result.positions.buffer,
       result.indices.buffer,

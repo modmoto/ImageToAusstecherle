@@ -80,7 +80,18 @@ export function extractContour(
     (a, b) => Math.abs(signedArea(b[0])) - Math.abs(signedArea(a[0])),
   );
   if (!sorted.length) throw new Error("No closed contour found.");
-  const raw = sorted[0][0].slice(0, -1).map(([x, y]) => [x, height - y]);
+  const warnings = [];
+  const rings = sorted[0].map((ring) =>
+    simplifyContour(ring, height, detail, warnings),
+  );
+  const [points, ...holes] = rings;
+  if (sorted.length > 1)
+    warnings.push("Multiple shapes detected: only the largest is used.");
+  return { points, holes, warnings };
+}
+
+function simplifyContour(ring, height, detail, warnings) {
+  const raw = ring.slice(0, -1).map(([x, y]) => [x, height - y]);
   const half = Math.floor(raw.length / 2);
   const tolerance =
     detailTolerances[detail - 1] ?? detailTolerances[defaultDetail - 1];
@@ -92,7 +103,6 @@ export function extractContour(
   ];
 
   let points = simplifyRing(tolerance);
-  const warnings = [];
   const pointLimit = 600;
   if (points.length > pointLimit) {
     let lower = tolerance;
@@ -114,22 +124,24 @@ export function extractContour(
         points = candidate;
       }
     }
-    warnings.push("Contour detail was reduced to keep conversion manageable.");
+    if (
+      !warnings.includes(
+        "Contour detail was reduced to keep conversion manageable.",
+      )
+    ) {
+      warnings.push(
+        "Contour detail was reduced to keep conversion manageable.",
+      );
+    }
   }
   if (points.length < 3) throw new Error("The detected shape is too small.");
   if (signedArea(points) < 0) points.reverse();
-  if (sorted.length > 1)
-    warnings.push("Multiple shapes detected: only the largest is used.");
-  if (sorted[0].length > 1)
-    warnings.push(
-      "Internal image contours are ignored; the cutter remains open inside.",
-    );
-  return { points, warnings };
+  return points;
 }
 
-export function scaleContour(points, size) {
-  const xs = points.map((p) => p[0]),
-    ys = points.map((p) => p[1]);
+export function scaleContour(points, size, reference = points) {
+  const xs = reference.map((p) => p[0]),
+    ys = reference.map((p) => p[1]);
   const minX = Math.min(...xs),
     maxX = Math.max(...xs),
     minY = Math.min(...ys),

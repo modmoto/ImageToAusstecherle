@@ -1,6 +1,6 @@
 # Ausstecherle
 
-Ausstecherle turns a PNG, SVG, JPG, or WebP silhouette into a 3D-printable cookie cutter. Choose an image, set the size, and click **Convert** to preview the cutter and download an STL. **Settings** lets you adjust contour detail, wall thickness, the outside taper, and the base. The inner wall stays vertical so the opening keeps the same shape through the cutter. Images are processed locally in the browser.
+Ausstecherle turns a PNG, SVG, JPG, or WebP silhouette into a 3D-printable cookie cutter. Choose an image, set the size, and click **Convert** to preview the cutter and download an STL. **Settings** lets you adjust contour detail, wall thickness, the outside taper, and the base. The inner wall stays vertical so the opening keeps the same shape through the cutter. Enclosed cutouts, such as the eyes, nose, and mouth in the smiley example, get three base-level supports each. Base Thickness sets their height and Base Margin sets their width. Images are processed locally in the browser.
 
 ## Run locally
 
