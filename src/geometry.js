@@ -3,9 +3,9 @@ import { scaleContour } from "./contour.js";
 
 export const defaults = {
   size: 50,
-  height: 20,
+  height: 10,
   wall: 1.2,
-  taper: 15,
+  taper: 5,
   tip: 0.1,
   base: 5,
   margin: 5,

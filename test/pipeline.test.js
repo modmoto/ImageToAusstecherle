@@ -24,7 +24,7 @@ for (const name of ["herz", "stern", "quadrat", "schlange"])
     const { points } = extractContour(png);
     const result = createCutter(api, points, defaults);
     assert.ok(result.volume > 0);
-    assert.ok(Math.abs(result.bounds.max[2] - 25) < 0.001);
+    assert.ok(Math.abs(result.bounds.max[2] - 15) < 0.001);
     // Every edge has exactly two opposing directed uses.
     const edges = new Map();
     const idx = result.indices;
@@ -67,7 +67,7 @@ for (const name of ["herz", "stern", "quadrat", "schlange"])
     assert.equal(binary.byteLength, 84 + result.triangles * 50);
     const restored = new STLLoader().parse(binary.buffer);
     restored.computeBoundingBox();
-    assert.ok(Math.abs(restored.boundingBox.max.z - 25) < 0.001);
+    assert.ok(Math.abs(restored.boundingBox.max.z - 15) < 0.001);
     assert.ok(restored.attributes.position.count > 0);
     console.log(
       `${name}: ${points.length} contour vertices, ${result.triangles} triangles, ${(binary.byteLength / 1024).toFixed(0)} KB STL`,
