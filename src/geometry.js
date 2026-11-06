@@ -75,29 +75,50 @@ function buildWall(api, inner, p, keep, isRim) {
     ? keep(inner.offset(p.wall + p.margin, "Round", 2, 32))
     : outer;
   const baseSection = keep(flange.subtract(inner));
-  const base = keep(baseSection.extrude(p.base));
-  const wallSection = keep(outer.subtract(inner));
-  const parts = [base];
-  if (p.taper > 0)
-    parts.push(
-      keep(keep(wallSection.extrude(p.taper)).translate([0, 0, p.base])),
-    );
+  const parts = [];
+  if (isRim) {
+    parts.push(keep(baseSection.extrude(p.base)));
+    if (p.taper > 0) {
+      const wallSection = keep(outer.subtract(inner));
+      const wall = keep(wallSection.extrude(p.taper));
+      parts.push(keep(wall.translate([0, 0, p.base])));
+    }
+  }
   const taperHeight = p.height - p.taper;
+  if (!isRim && p.wall === p.tip) {
+    parts.push(keep(baseSection.extrude(p.base + p.height)));
+    return { parts, baseSection, outer, flange };
+  }
   const taperParts = [];
+  const lowerWidth = isRim ? p.wall : Math.min(0.0001, p.wall - p.tip);
+  const upperWidth = isRim ? p.tip : p.wall - p.tip;
   for (const boundary of inner.toPolygons()) {
     for (let i = 0; i < boundary.length; i++) {
       const a = boundary[i];
       const b = boundary[(i + 1) % boundary.length];
-      taperParts.push(keep(wedge(api, a, b, p.wall, p.tip, taperHeight)));
-      const join = keep(api.Manifold.cylinder(taperHeight, p.wall, p.tip, 32));
+      taperParts.push(
+        keep(wedge(api, a, b, lowerWidth, upperWidth, taperHeight)),
+      );
+      const join = keep(
+        api.Manifold.cylinder(taperHeight, lowerWidth, upperWidth, 32),
+      );
       taperParts.push(keep(join.translate([a[0], a[1], 0])));
     }
   }
-  // Cut the same vertical opening through the tapered section as the base and wall.
+  // The bevel faces the dough discarded outside the cookie or inside each hole.
   const taperStroke = keep(api.Manifold.union(taperParts));
-  const opening = keep(inner.extrude(taperHeight));
-  const taperedWall = keep(taperStroke.subtract(opening));
-  parts.push(keep(taperedWall.translate([0, 0, p.base + p.taper])));
+  const z = p.base + p.taper;
+  if (isRim) {
+    const opening = keep(inner.extrude(taperHeight));
+    const taperedWall = keep(taperStroke.subtract(opening));
+    parts.push(keep(taperedWall.translate([0, 0, z])));
+  } else {
+    const bevel = keep(taperStroke.translate([0, 0, z]));
+    const outerSolid = keep(outer.extrude(p.base + p.height));
+    const opening = keep(inner.extrude(p.base + p.height));
+    const waste = keep(api.Manifold.union([opening, bevel]));
+    parts.push(keep(outerSolid.subtract(waste)));
+  }
   return { parts, baseSection, outer, flange };
 }
 

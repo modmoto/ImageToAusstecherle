@@ -226,6 +226,32 @@ test("smiley cutouts share three base-level supports sized by the base settings"
         triVerts: result.indices,
       }),
     );
+    const ringAreas = (z) => {
+      const slice = body.slice(z);
+      const rings = slice.decompose();
+      const areas = rings
+        .map((ring) =>
+          ring
+            .toPolygons()
+            .map((polygon) => Math.abs(signedArea(polygon)))
+            .sort((a, b) => b - a),
+        )
+        .sort((a, b) => b[0] - a[0]);
+      rings.forEach((ring) => ring.delete());
+      slice.delete();
+      return areas;
+    };
+    const straight = ringAreas(dimensions.base + dimensions.taper - 0.5);
+    const tapered = ringAreas(dimensions.base + dimensions.height - 0.5);
+    assert.equal(straight.length, 5);
+    assert.equal(tapered.length, 5);
+    assert.ok(tapered[0][0] < straight[0][0]);
+    assert.ok(Math.abs(tapered[0][1] - straight[0][1]) < 0.01);
+    for (let i = 1; i < straight.length; i++) {
+      assert.ok(Math.abs(tapered[i][0] - straight[i][0]) < 0.01);
+      assert.ok(tapered[i][1] > straight[i][1]);
+    }
+
     const { a, b, length } = result.supports.reduce((longest, support) =>
       support.length > longest.length ? support : longest,
     );
